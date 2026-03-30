@@ -1,6 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { logger } from '@trigger.dev/sdk/v3'
 import { TOPICS } from '@/lib/topics'
+
+// Simple logger that works both inside and outside Trigger.dev tasks
+const logger = {
+  error: (msg: string, ctx?: object) => console.error(msg, ctx ?? ''),
+  warn: (msg: string, ctx?: object) => console.warn(msg, ctx ?? ''),
+  info: (msg: string, ctx?: object) => console.log(msg, ctx ?? ''),
+}
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,

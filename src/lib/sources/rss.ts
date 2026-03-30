@@ -8,12 +8,24 @@ export type FeedItem = {
   sourceDomain: string
   publishedAt: Date | null
   content: string
+  imageUrl: string | null
 }
 
-const parser = new Parser({
+type CustomItem = {
+  'media:content'?: { $?: { url?: string } }
+  'media:thumbnail'?: { $?: { url?: string } }
+  enclosure?: { url?: string; type?: string }
+}
+
+const parser = new Parser<object, CustomItem>({
   timeout: 10000,
-  headers: {
-    'User-Agent': 'Vantage-NewsBot/1.0 (news aggregator)',
+  headers: { 'User-Agent': 'Vantage-NewsBot/1.0 (news aggregator)' },
+  customFields: {
+    item: [
+      ['media:content', 'media:content', { keepArray: false }],
+      ['media:thumbnail', 'media:thumbnail', { keepArray: false }],
+      'enclosure',
+    ],
   },
 })
 
@@ -36,6 +48,7 @@ export async function fetchRssFeed(
         sourceDomain: domain,
         publishedAt: item.pubDate ? new Date(item.pubDate) : null,
         content: stripHtml(item.contentSnippet ?? item.content ?? item.summary ?? '').slice(0, 2000),
+        imageUrl: extractImage(item),
       }))
   } catch {
     return []
@@ -61,12 +74,27 @@ export async function fetchNitterFeed(
           sourceDomain: 'x.com',
           publishedAt: item.pubDate ? new Date(item.pubDate) : null,
           content: stripHtml(item.contentSnippet ?? item.content ?? '').slice(0, 1000),
+          imageUrl: extractImage(item),
         }))
     } catch {
       continue
     }
   }
   return []
+}
+
+function extractImage(item: CustomItem & { itunes?: { image?: string } }): string | null {
+  try {
+    const enc = item.enclosure
+    if (enc?.url && enc?.type?.startsWith('image/')) return enc.url
+    const mc = item['media:content']
+    if (mc?.$?.url) return mc.$.url
+    const mt = item['media:thumbnail']
+    if (mt?.$?.url) return mt.$.url
+  } catch {
+    // ignore
+  }
+  return null
 }
 
 function extractDomain(url: string): string {
@@ -92,8 +120,7 @@ function stripHtml(html: string): string {
 function normalizeNitterUrl(nitterUrl: string, username: string): string {
   try {
     const u = new URL(nitterUrl)
-    const path = u.pathname
-    return `https://x.com${path}`
+    return `https://x.com${u.pathname}`
   } catch {
     return `https://x.com/${username}`
   }

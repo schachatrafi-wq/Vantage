@@ -7,6 +7,7 @@ export type Article = {
   source_domain: string
   published_at: string | null
   raw_content: string | null
+  image_url: string | null
   created_at: string
 }
 

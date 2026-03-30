@@ -1,8 +1,9 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 import { TOPICS } from '@/lib/topics'
 import ArticleCard from '@/components/ArticleCard'
+import Greeting from '@/components/Greeting'
 import type { ArticleWithSummary } from '@/lib/types'
 
 export default async function DashboardPage() {
@@ -11,21 +12,16 @@ export default async function DashboardPage() {
 
   const supabase = createServerClient()
 
-  const [{ data: userTopicRows }, { data: affinityRow }, { data: sourceRatingRows }] =
+  const [{ data: userTopicRows }, { data: affinityRow }, { data: sourceRatingRows }, user] =
     await Promise.all([
-      supabase
-        .from('user_topics')
-        .select('topic_id')
-        .eq('user_id', userId),
+      supabase.from('user_topics').select('topic_id').eq('user_id', userId),
       supabase
         .from('user_affinity_profiles')
         .select('topic_weights')
         .eq('user_id', userId)
         .single(),
-      supabase
-        .from('user_source_ratings')
-        .select('source_domain, rating')
-        .eq('user_id', userId),
+      supabase.from('user_source_ratings').select('source_domain, rating').eq('user_id', userId),
+      currentUser(),
     ])
 
   const topicIds = (userTopicRows ?? []).map((r) => r.topic_id)
@@ -40,13 +36,20 @@ export default async function DashboardPage() {
     .from('article_topics')
     .select('article_id, topic_id, relevance_score')
     .in('topic_id', topicIds)
-    .gte('relevance_score', 0.4)
+    .gte('relevance_score', 0.3)
     .order('relevance_score', { ascending: false })
     .limit(200)
 
   const articleIds = [...new Set((articleTopicRows ?? []).map((r) => r.article_id))]
   if (articleIds.length === 0) {
-    return <EmptyFeed />
+    const firstName = user?.firstName ?? 'there'
+    const topicNames = topicIds.map((id) => TOPICS.find((t) => t.id === id)?.name).filter(Boolean) as string[]
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-8">
+        <Greeting firstName={firstName} topicNames={topicNames} />
+        <EmptyFeed />
+      </div>
+    )
   }
 
   const [{ data: articles }, { data: summaries }, { data: crossFlags }, { data: userRatings }] =
@@ -68,7 +71,9 @@ export default async function DashboardPage() {
 
   const summaryMap = Object.fromEntries((summaries ?? []).map((s) => [s.article_id, s]))
   const crossFlagMap = Object.fromEntries((crossFlags ?? []).map((f) => [f.article_id, f]))
-  const userRatingMap = Object.fromEntries((userRatings ?? []).map((r) => [r.article_id, r.rating as 1 | -1]))
+  const userRatingMap = Object.fromEntries(
+    (userRatings ?? []).map((r) => [r.article_id, r.rating as 1 | -1])
+  )
   const articleTopicsMap: Record<string, string[]> = {}
   for (const row of articleTopicRows ?? []) {
     if (!articleTopicsMap[row.article_id]) articleTopicsMap[row.article_id] = []
@@ -104,25 +109,21 @@ export default async function DashboardPage() {
   const breakingArticles = scored.filter((a) => a.summary?.is_breaking)
   const feedArticles = scored.filter((a) => !a.summary?.is_breaking).slice(0, 40)
 
-  const userTopicDetails = topicIds
-    .map((id) => TOPICS.find((t) => t.id === id))
-    .filter(Boolean) as (typeof TOPICS)[number][]
+  const firstName = user?.firstName ?? 'there'
+  const topicNames = topicIds
+    .map((id) => TOPICS.find((t) => t.id === id)?.name)
+    .filter(Boolean) as string[]
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground">My Feed</h1>
-        <p className="text-muted text-sm mt-1">
-          Personalized across {userTopicDetails.map((t) => t.name).join(', ')}
-        </p>
-      </div>
+    <div className="mx-auto max-w-2xl px-6 py-8">
+      <Greeting firstName={firstName} topicNames={topicNames} />
 
       {breakingArticles.length > 0 && (
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-sm font-semibold text-breaking">🔴 Breaking</span>
+            <span className="text-sm font-bold text-breaking uppercase tracking-wide">🔴 Breaking</span>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {breakingArticles.map((article) => (
               <ArticleCard key={article.id} article={article} />
             ))}
@@ -130,11 +131,18 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      <div className="flex flex-col gap-4">
-        {feedArticles.map((article) => (
-          <ArticleCard key={article.id} article={article} />
-        ))}
-      </div>
+      {feedArticles.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(235,235,245,0.3)] mb-4">
+            Top Stories
+          </p>
+          <div className="flex flex-col gap-3">
+            {feedArticles.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {feedArticles.length === 0 && breakingArticles.length === 0 && <EmptyFeed />}
     </div>
@@ -143,10 +151,10 @@ export default async function DashboardPage() {
 
 function EmptyFeed() {
   return (
-    <div className="flex flex-col items-center justify-center h-96 text-center px-6">
+    <div className="flex flex-col items-center justify-center h-80 text-center">
       <span className="text-5xl mb-4">📡</span>
-      <h2 className="text-lg font-semibold text-foreground">Your feed is being built</h2>
-      <p className="text-muted text-sm mt-2 max-w-sm">
+      <h2 className="text-lg font-semibold text-white">Your feed is being built</h2>
+      <p className="text-sm text-[rgba(235,235,245,0.5)] mt-2 max-w-sm">
         We&apos;re ingesting and analyzing the latest news. Check back in a few minutes.
       </p>
     </div>

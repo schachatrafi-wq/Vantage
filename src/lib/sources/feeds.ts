@@ -5,78 +5,300 @@ export type RssFeed = {
 }
 
 export const RSS_FEEDS: RssFeed[] = [
-  // AI & AGI
+  // ── AI & AGI ──────────────────────────────────────────────────────────────
   { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', label: 'TechCrunch AI', topicIds: ['ai-agi', 'vc-startups'] },
-  { url: 'https://www.technologyreview.com/feed/', label: 'MIT Tech Review', topicIds: ['ai-agi', 'biotech-health'] },
+  { url: 'https://www.technologyreview.com/feed/', label: 'MIT Tech Review', topicIds: ['ai-agi', 'science'] },
   { url: 'https://venturebeat.com/category/ai/feed/', label: 'VentureBeat AI', topicIds: ['ai-agi', 'vc-startups'] },
-  { url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml', label: 'The Verge AI', topicIds: ['ai-agi'] },
+  { url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml', label: 'The Verge AI', topicIds: ['ai-agi', 'consumer-tech'] },
   { url: 'https://www.wired.com/feed/category/artificial-intelligence/latest/rss', label: 'Wired AI', topicIds: ['ai-agi'] },
-  { url: 'https://deepmind.google/blog/rss.xml', label: 'Google DeepMind Blog', topicIds: ['ai-agi'] },
+  { url: 'https://deepmind.google/blog/rss.xml', label: 'Google DeepMind', topicIds: ['ai-agi'] },
 
-  // Cybersecurity
+  // ── Cybersecurity ─────────────────────────────────────────────────────────
   { url: 'https://feeds.feedburner.com/TheHackersNews', label: 'The Hacker News', topicIds: ['cybersecurity'] },
   { url: 'https://krebsonsecurity.com/feed/', label: 'Krebs on Security', topicIds: ['cybersecurity'] },
   { url: 'https://www.darkreading.com/rss.xml', label: 'Dark Reading', topicIds: ['cybersecurity'] },
   { url: 'https://www.bleepingcomputer.com/feed/', label: 'Bleeping Computer', topicIds: ['cybersecurity'] },
   { url: 'https://www.schneier.com/blog/atom.xml', label: 'Schneier on Security', topicIds: ['cybersecurity', 'data-privacy'] },
 
-  // Blockchain & Crypto
+  // ── Blockchain & Crypto ───────────────────────────────────────────────────
   { url: 'https://coindesk.com/arc/outboundfeeds/rss/', label: 'CoinDesk', topicIds: ['blockchain-crypto'] },
   { url: 'https://cointelegraph.com/rss', label: 'CoinTelegraph', topicIds: ['blockchain-crypto'] },
   { url: 'https://decrypt.co/feed', label: 'Decrypt', topicIds: ['blockchain-crypto'] },
   { url: 'https://thedefiant.io/api/feeds/rss.xml', label: 'The Defiant', topicIds: ['blockchain-crypto'] },
 
-  // AI & Commercial Law
-  { url: 'https://www.lawfaremedia.org/articles/feed', label: 'Lawfare', topicIds: ['ai-commercial-law', 'data-privacy'] },
-  { url: 'https://feeds.lexology.com/lexology', label: 'Lexology', topicIds: ['ai-commercial-law', 'gambling-gaming-law'] },
-  { url: 'https://iapp.org/news/rss/', label: 'IAPP', topicIds: ['ai-commercial-law', 'data-privacy'] },
-  { url: 'https://www.technologylawblog.com/feed/', label: 'Tech Law Blog', topicIds: ['ai-commercial-law'] },
+  // ── Consumer Tech ─────────────────────────────────────────────────────────
+  { url: 'https://www.theverge.com/rss/index.xml', label: 'The Verge', topicIds: ['consumer-tech', 'social-media-tech'] },
+  { url: 'https://www.engadget.com/rss.xml', label: 'Engadget', topicIds: ['consumer-tech', 'automotive-ev'] },
+  { url: 'https://www.cnet.com/rss/news/', label: 'CNET', topicIds: ['consumer-tech'] },
+  { url: 'https://arstechnica.com/feed/', label: 'Ars Technica', topicIds: ['consumer-tech', 'science'] },
 
-  // Gambling & Gaming Law
+  // ── Robotics ──────────────────────────────────────────────────────────────
+  { url: 'https://spectrum.ieee.org/feeds/feed.rss', label: 'IEEE Spectrum', topicIds: ['robotics', 'ai-agi', 'science'] },
+  { url: 'https://www.therobotreport.com/feed/', label: 'The Robot Report', topicIds: ['robotics'] },
+  { url: 'https://roboticsandautomationnews.com/feed/', label: 'Robotics & Automation News', topicIds: ['robotics'] },
+
+  // ── Social Media & Big Tech ───────────────────────────────────────────────
+  { url: 'https://techcrunch.com/social/feed/', label: 'TechCrunch Social', topicIds: ['social-media-tech'] },
+  { url: 'https://www.socialmediatoday.com/rss.xml', label: 'Social Media Today', topicIds: ['social-media-tech'] },
+  { url: 'https://www.platformer.news/feed', label: 'Platformer', topicIds: ['social-media-tech', 'ai-agi'] },
+
+  // ── AI & Commercial Law ───────────────────────────────────────────────────
+  { url: 'https://www.lawfaremedia.org/articles/feed', label: 'Lawfare', topicIds: ['ai-commercial-law', 'data-privacy', 'geopolitics'] },
+  { url: 'https://www.natlawreview.com/recent-articles/feed', label: 'National Law Review', topicIds: ['ai-commercial-law', 'gambling-gaming-law', 'data-privacy', 'labor'] },
+  { url: 'https://fpf.org/feed/', label: 'Future of Privacy Forum', topicIds: ['ai-commercial-law', 'data-privacy'] },
+  { url: 'https://www.eff.org/rss/updates.xml', label: 'EFF', topicIds: ['data-privacy', 'ai-commercial-law', 'human-rights'] },
+
+  // ── Gambling & Gaming Law ─────────────────────────────────────────────────
   { url: 'https://www.igamingbusiness.com/rss.xml', label: 'iGaming Business', topicIds: ['gambling-gaming-law'] },
   { url: 'https://calvinayre.com/feed/', label: 'Calvin Ayre', topicIds: ['gambling-gaming-law'] },
   { url: 'https://sbcnews.co.uk/feed/', label: 'SBC News', topicIds: ['gambling-gaming-law'] },
   { url: 'https://www.gamblinginsider.com/feed/', label: 'Gambling Insider', topicIds: ['gambling-gaming-law'] },
-  { url: 'https://www.sportsbusinessjournal.com/SB/Sections/Technology/RSS-Feed.aspx', label: 'Sports Business Journal', topicIds: ['gambling-gaming-law'] },
+  { url: 'https://www.sportsbusinessjournal.com/SB/Sections/Technology/RSS-Feed.aspx', label: 'Sports Business Journal', topicIds: ['gambling-gaming-law', 'sports'] },
 
-  // Data Privacy
-  { url: 'https://www.eff.org/rss/updates.xml', label: 'EFF', topicIds: ['data-privacy', 'ai-commercial-law'] },
-  { url: 'https://privacyinternational.org/feed', label: 'Privacy International', topicIds: ['data-privacy'] },
-  { url: 'https://edps.europa.eu/press-publications/press-news/press-releases/feed_en', label: 'EDPS', topicIds: ['data-privacy', 'ai-commercial-law'] },
-
-  // Stock Market
+  // ── Stock Market ──────────────────────────────────────────────────────────
   { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', label: 'MarketWatch Real-time', topicIds: ['stock-market'] },
   { url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', label: 'MarketWatch Top', topicIds: ['stock-market', 'global-economy'] },
   { url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml', label: 'WSJ Markets', topicIds: ['stock-market', 'global-economy'] },
-  { url: 'https://www.investing.com/rss/news.rss', label: 'Investing.com', topicIds: ['stock-market', 'global-economy'] },
   { url: 'https://seekingalpha.com/market_currents.xml', label: 'Seeking Alpha', topicIds: ['stock-market'] },
+  { url: 'https://www.investing.com/rss/news.rss', label: 'Investing.com', topicIds: ['stock-market', 'global-economy'] },
 
-  // VC & Startups
+  // ── VC & Startups ─────────────────────────────────────────────────────────
   { url: 'https://techcrunch.com/startups/feed/', label: 'TechCrunch Startups', topicIds: ['vc-startups'] },
   { url: 'https://news.crunchbase.com/feed/', label: 'Crunchbase News', topicIds: ['vc-startups'] },
   { url: 'https://techcrunch.com/venture/feed/', label: 'TechCrunch Venture', topicIds: ['vc-startups'] },
+  { url: 'https://sifted.eu/feed/', label: 'Sifted', topicIds: ['vc-startups'] },
 
-  // Global Economy
-  { url: 'https://feeds.reuters.com/reuters/businessNews', label: 'Reuters Business', topicIds: ['global-economy', 'stock-market'] },
-  { url: 'https://www.ft.com/rss/home', label: 'Financial Times', topicIds: ['global-economy', 'stock-market'] },
-  { url: 'https://www.economist.com/latest/rss.xml', label: 'The Economist', topicIds: ['global-economy'] },
-  { url: 'https://www.imf.org/en/News/rss?language=eng', label: 'IMF News', topicIds: ['global-economy'] },
+  // ── Global Economy ────────────────────────────────────────────────────────
+  { url: 'https://www.ft.com/rss/home', label: 'Financial Times', topicIds: ['global-economy', 'stock-market', 'trade-tariffs'] },
+  { url: 'https://www.economist.com/latest/rss.xml', label: 'The Economist', topicIds: ['global-economy', 'geopolitics'] },
+  { url: 'https://restofworld.org/feed/latest/', label: 'Rest of World', topicIds: ['global-economy', 'emerging-markets'] },
 
-  // Biotech & Health Tech
-  { url: 'https://www.statnews.com/feed/', label: 'STAT News', topicIds: ['biotech-health'] },
-  { url: 'https://www.fiercepharma.com/rss/xml', label: 'Fierce Pharma', topicIds: ['biotech-health'] },
+  // ── Real Estate ───────────────────────────────────────────────────────────
+  { url: 'https://therealdeal.com/feed/', label: 'The Real Deal', topicIds: ['real-estate'] },
+  { url: 'https://www.housingwire.com/feed/', label: 'HousingWire', topicIds: ['real-estate'] },
+  { url: 'https://www.bisnow.com/feed', label: 'Bisnow', topicIds: ['real-estate'] },
+
+  // ── Trade & Tariffs ───────────────────────────────────────────────────────
+  { url: 'https://www.wto.org/english/news_e/rss_e/rss_e.xml', label: 'WTO News', topicIds: ['trade-tariffs', 'global-economy'] },
+
+  // ── Emerging Markets ──────────────────────────────────────────────────────
+  { url: 'https://www.africanews.com/feed', label: 'Africa News', topicIds: ['emerging-markets', 'geopolitics'] },
+  { url: 'https://www.scmp.com/rss/91/feed', label: 'South China Morning Post', topicIds: ['emerging-markets', 'geopolitics'] },
+
+  // ── Biotech & Health Tech ─────────────────────────────────────────────────
+  { url: 'https://www.statnews.com/feed/', label: 'STAT News', topicIds: ['biotech-health', 'pharma'] },
+  { url: 'https://www.fiercepharma.com/rss/xml', label: 'Fierce Pharma', topicIds: ['biotech-health', 'pharma'] },
   { url: 'https://endpts.com/feed/', label: 'Endpoints News', topicIds: ['biotech-health'] },
-  { url: 'https://www.biopharmadive.com/feeds/news/', label: 'BioPharma Dive', topicIds: ['biotech-health'] },
+  { url: 'https://www.biopharmadive.com/feeds/news/', label: 'BioPharma Dive', topicIds: ['biotech-health', 'pharma'] },
 
-  // Climate & Energy
-  { url: 'https://www.carbonbrief.org/feed', label: 'Carbon Brief', topicIds: ['climate-energy'] },
-  { url: 'https://www.iea.org/news.xml', label: 'IEA', topicIds: ['climate-energy'] },
+  // ── Science ───────────────────────────────────────────────────────────────
+  { url: 'https://www.sciencedaily.com/rss/top.xml', label: 'Science Daily', topicIds: ['science'] },
+  { url: 'https://www.newscientist.com/feed/home/', label: 'New Scientist', topicIds: ['science'] },
+  { url: 'https://www.nature.com/news.rss', label: 'Nature', topicIds: ['science', 'biotech-health'] },
+  { url: 'https://phys.org/rss-feed/', label: 'Phys.org', topicIds: ['science', 'space-defense'] },
+
+  // ── Mental Health ─────────────────────────────────────────────────────────
+  { url: 'https://www.mentalhealthamerica.net/feed', label: 'Mental Health America', topicIds: ['mental-health'] },
+  { url: 'https://www.psychiatrictimes.com/rss', label: 'Psychiatric Times', topicIds: ['mental-health'] },
+
+  // ── Health & Wellness ─────────────────────────────────────────────────────
+  { url: 'https://www.healthline.com/rss/news', label: 'Healthline', topicIds: ['health-wellness'] },
+  { url: 'https://www.medicalnewstoday.com/rss', label: 'Medical News Today', topicIds: ['health-wellness', 'science'] },
+
+  // ── Climate & Energy ──────────────────────────────────────────────────────
+  { url: 'https://www.carbonbrief.org/feed', label: 'Carbon Brief', topicIds: ['climate-energy', 'environment'] },
+  { url: 'https://www.iea.org/news.xml', label: 'IEA', topicIds: ['climate-energy', 'nuclear'] },
   { url: 'https://www.renewableenergyworld.com/feed/', label: 'Renewable Energy World', topicIds: ['climate-energy'] },
-  { url: 'https://electrek.co/feed/', label: 'Electrek', topicIds: ['climate-energy'] },
+  { url: 'https://electrek.co/feed/', label: 'Electrek', topicIds: ['climate-energy', 'automotive-ev'] },
 
-  // Space & Defense
+  // ── Environment & Biodiversity ────────────────────────────────────────────
+  { url: 'https://www.mongabay.com/feed/', label: 'Mongabay', topicIds: ['environment'] },
+  { url: 'https://grist.org/feed/', label: 'Grist', topicIds: ['environment', 'climate-energy'] },
+
+  // ── Agriculture ───────────────────────────────────────────────────────────
+  { url: 'https://www.agweb.com/rss/news', label: 'AgWeb', topicIds: ['agriculture'] },
+  { url: 'https://www.farmprogress.com/rss', label: 'Farm Progress', topicIds: ['agriculture'] },
+
+  // ── Nuclear ───────────────────────────────────────────────────────────────
+  { url: 'https://www.world-nuclear-news.org/rss', label: 'World Nuclear News', topicIds: ['nuclear', 'climate-energy'] },
+
+  // ── US Politics ───────────────────────────────────────────────────────────
+  { url: 'https://rss.politico.com/politics-news.xml', label: 'Politico', topicIds: ['us-politics', 'elections'] },
+  { url: 'https://thehill.com/feed/', label: 'The Hill', topicIds: ['us-politics', 'elections'] },
+  { url: 'https://www.axios.com/feeds/topics/politics', label: 'Axios Politics', topicIds: ['us-politics'] },
+  { url: 'https://feeds.npr.org/1014/rss.xml', label: 'NPR Politics', topicIds: ['us-politics'] },
+
+  // ── Geopolitics ───────────────────────────────────────────────────────────
+  { url: 'https://foreignpolicy.com/feed/', label: 'Foreign Policy', topicIds: ['geopolitics', 'military'] },
+  { url: 'https://www.cfr.org/rss.xml', label: 'Council on Foreign Relations', topicIds: ['geopolitics'] },
+  { url: 'https://www.bbc.co.uk/news/world/rss.xml', label: 'BBC World News', topicIds: ['geopolitics', 'us-politics'] },
+  { url: 'https://www.aljazeera.com/xml/rss/all.xml', label: 'Al Jazeera', topicIds: ['geopolitics', 'human-rights'] },
+
+  // ── Military & Defense ────────────────────────────────────────────────────
+  { url: 'https://www.defensenews.com/rss/', label: 'Defense News', topicIds: ['military', 'space-defense'] },
+  { url: 'https://www.defenseone.com/rss/all/', label: 'Defense One', topicIds: ['military', 'space-defense'] },
+
+  // ── Space & Defense ───────────────────────────────────────────────────────
   { url: 'https://spacenews.com/feed/', label: 'Space News', topicIds: ['space-defense'] },
-  { url: 'https://www.defenseone.com/rss/all/', label: 'Defense One', topicIds: ['space-defense'] },
-  { url: 'https://www.nasaspaceflight.com/feed/', label: 'NASASpaceFlight', topicIds: ['space-defense'] },
-  { url: 'https://aviationweek.com/rss.xml', label: 'Aviation Week', topicIds: ['space-defense'] },
+  { url: 'https://www.nasaspaceflight.com/feed/', label: 'NASASpaceFlight', topicIds: ['space-defense', 'science'] },
+
+  // ── Elections ─────────────────────────────────────────────────────────────
+  { url: 'https://fivethirtyeight.com/features/feed/', label: 'FiveThirtyEight', topicIds: ['elections', 'us-politics'] },
+
+  // ── Human Rights ──────────────────────────────────────────────────────────
+  { url: 'https://www.hrw.org/rss.xml', label: 'Human Rights Watch', topicIds: ['human-rights'] },
+  { url: 'https://www.amnesty.org/en/news/rss/', label: 'Amnesty International', topicIds: ['human-rights'] },
+
+  // ── Immigration ───────────────────────────────────────────────────────────
+  { url: 'https://immigrationimpact.com/feed/', label: 'Immigration Impact', topicIds: ['immigration'] },
+  { url: 'https://www.migrationpolicy.org/rss.xml', label: 'Migration Policy Institute', topicIds: ['immigration'] },
+
+  // ── Entertainment ─────────────────────────────────────────────────────────
+  { url: 'https://variety.com/feed/', label: 'Variety', topicIds: ['entertainment', 'film-tv', 'music'] },
+  { url: 'https://deadline.com/feed/', label: 'Deadline', topicIds: ['entertainment', 'film-tv'] },
+  { url: 'https://www.hollywoodreporter.com/feed/', label: 'Hollywood Reporter', topicIds: ['entertainment', 'film-tv'] },
+  { url: 'https://pitchfork.com/rss/news/feed/r.xml', label: 'Pitchfork', topicIds: ['entertainment'] },
+
+  // ── Film & TV ─────────────────────────────────────────────────────────────
+  { url: 'https://www.indiewire.com/feed/', label: 'IndieWire', topicIds: ['film-tv'] },
+  { url: 'https://www.screendaily.com/rss', label: 'Screen Daily', topicIds: ['film-tv'] },
+
+  // ── Gaming & Esports ──────────────────────────────────────────────────────
+  { url: 'https://kotaku.com/rss', label: 'Kotaku', topicIds: ['gaming-esports'] },
+  { url: 'https://www.pcgamer.com/rss/', label: 'PC Gamer', topicIds: ['gaming-esports'] },
+  { url: 'https://www.eurogamer.net/feed', label: 'Eurogamer', topicIds: ['gaming-esports'] },
+  { url: 'https://www.ign.com/feeds/all', label: 'IGN', topicIds: ['gaming-esports', 'film-tv'] },
+
+  // ── Sports ────────────────────────────────────────────────────────────────
+  { url: 'https://feeds.bbci.co.uk/sport/rss.xml', label: 'BBC Sport', topicIds: ['sports'] },
+  { url: 'https://www.espn.com/espn/rss/news', label: 'ESPN', topicIds: ['sports'] },
+  { url: 'https://theathletic.com/rss/', label: 'The Athletic', topicIds: ['sports'] },
+
+  // ── Classical Music & Opera ───────────────────────────────────────────────
+  { url: 'https://www.gramophone.co.uk/feed', label: 'Gramophone', topicIds: ['classical-opera'] },
+  { url: 'https://www.theguardian.com/music/classical/rss', label: 'Guardian Classical', topicIds: ['classical-opera'] },
+  { url: 'https://bachtrack.com/rss', label: 'Bachtrack', topicIds: ['classical-opera'] },
+  { url: 'https://www.operawire.com/feed/', label: 'OperaWire', topicIds: ['classical-opera'] },
+
+  // ── Literature & Books ────────────────────────────────────────────────────
+  { url: 'https://lithub.com/feed/', label: 'Literary Hub', topicIds: ['literature'] },
+  { url: 'https://www.theguardian.com/books/rss', label: 'Guardian Books', topicIds: ['literature'] },
+  { url: 'https://www.publishersweekly.com/pw/feeds/latestNews/index.html', label: 'Publishers Weekly', topicIds: ['literature'] },
+
+  // ── Art & Design ──────────────────────────────────────────────────────────
+  { url: 'https://hyperallergic.com/feed/', label: 'Hyperallergic', topicIds: ['art-design'] },
+  { url: 'https://www.designboom.com/feed/', label: 'Designboom', topicIds: ['art-design', 'architecture'] },
+  { url: 'https://www.dezeen.com/feed/', label: 'Dezeen', topicIds: ['art-design', 'architecture'] },
+
+  // ── Architecture ──────────────────────────────────────────────────────────
+  { url: 'https://www.archdaily.com/feed/', label: 'ArchDaily', topicIds: ['architecture'] },
+  { url: 'https://www.architectural-review.com/feed', label: 'Architectural Review', topicIds: ['architecture'] },
+
+  // ── Food & Drink ──────────────────────────────────────────────────────────
+  { url: 'https://eater.com/rss/index.xml', label: 'Eater', topicIds: ['food-drink'] },
+  { url: 'https://www.theguardian.com/lifeandstyle/food-and-drink/rss', label: 'Guardian Food', topicIds: ['food-drink'] },
+  { url: 'https://www.bonappetit.com/feed/rss', label: 'Bon Appétit', topicIds: ['food-drink'] },
+
+  // ── Fashion & Luxury ──────────────────────────────────────────────────────
+  { url: 'https://wwd.com/feed/', label: 'WWD', topicIds: ['fashion-luxury'] },
+  { url: 'https://www.businessoffashion.com/feed', label: 'Business of Fashion', topicIds: ['fashion-luxury'] },
+  { url: 'https://www.voguebusiness.com/rss', label: 'Vogue Business', topicIds: ['fashion-luxury'] },
+
+  // ── Travel ────────────────────────────────────────────────────────────────
+  { url: 'https://www.cntraveler.com/feed/rss', label: 'Condé Nast Traveler', topicIds: ['travel'] },
+  { url: 'https://www.lonelyplanet.com/articles/feed', label: 'Lonely Planet', topicIds: ['travel'] },
+  { url: 'https://www.theguardian.com/travel/rss', label: 'Guardian Travel', topicIds: ['travel'] },
+
+  // ── Automotive & EVs ──────────────────────────────────────────────────────
+  { url: 'https://insideevs.com/feed/latest/', label: 'InsideEVs', topicIds: ['automotive-ev', 'climate-energy'] },
+  { url: 'https://www.motortrend.com/feeds/', label: 'MotorTrend', topicIds: ['automotive-ev'] },
+  { url: 'https://www.autocar.co.uk/rss', label: 'Autocar', topicIds: ['automotive-ev'] },
+
+  // ── Aviation & Transport ──────────────────────────────────────────────────
+  { url: 'https://simpleflying.com/feed/', label: 'Simple Flying', topicIds: ['aviation'] },
+  { url: 'https://aviationweek.com/rss.xml', label: 'Aviation Week', topicIds: ['aviation', 'space-defense'] },
+  { url: 'https://thepointsguy.com/news/feed/', label: 'The Points Guy', topicIds: ['aviation', 'travel'] },
+
+  // ── Media & Journalism ────────────────────────────────────────────────────
+  { url: 'https://www.niemanlab.org/feed/', label: 'Nieman Lab', topicIds: ['media-journalism'] },
+  { url: 'https://www.poynter.org/feed/', label: 'Poynter', topicIds: ['media-journalism'] },
+  { url: 'https://digiday.com/feed/', label: 'Digiday', topicIds: ['media-journalism', 'social-media-tech'] },
+
+  // ── Labor & Employment ────────────────────────────────────────────────────
+  { url: 'https://www.laborpress.org/feed/', label: 'Labor Press', topicIds: ['labor'] },
+  { url: 'https://jacobin.com/feed/', label: 'Jacobin', topicIds: ['labor', 'us-politics'] },
+
+  // ── Education ─────────────────────────────────────────────────────────────
+  { url: 'https://www.insidehighered.com/rss.xml', label: 'Inside Higher Ed', topicIds: ['education'] },
+  { url: 'https://edsurge.com/news.rss', label: 'EdSurge', topicIds: ['education', 'ai-agi'] },
+
+  // ── Religion & Spirituality ───────────────────────────────────────────────
+  { url: 'https://www.religionnews.com/feed/', label: 'Religion News Service', topicIds: ['religion', 'judaism'] },
+  { url: 'https://www.christianitytoday.com/feeds/articles/news.xml', label: 'Christianity Today', topicIds: ['religion'] },
+
+  // ── Judaism & Jewish World ────────────────────────────────────────────────
+  { url: 'https://www.timesofisrael.com/feed/', label: 'Times of Israel', topicIds: ['judaism', 'geopolitics'] },
+  { url: 'https://forward.com/feed/', label: 'The Forward', topicIds: ['judaism'] },
+  { url: 'https://www.jewishjournal.com/feed/', label: 'Jewish Journal', topicIds: ['judaism'] },
+  { url: 'https://www.haaretz.com/cmlink/1.628759', label: 'Haaretz', topicIds: ['judaism', 'geopolitics'] },
+
+  // ── Philosophy & Ethics ───────────────────────────────────────────────────
+  { url: 'https://philosophynow.org/rss.xml', label: 'Philosophy Now', topicIds: ['philosophy'] },
+  { url: 'https://www.theguardian.com/world/philosophy/rss', label: 'Guardian Philosophy', topicIds: ['philosophy'] },
+
+  // ── Pharmaceuticals ───────────────────────────────────────────────────────
+  { url: 'https://www.pharmaceutical-technology.com/feed/', label: 'Pharmaceutical Technology', topicIds: ['pharma'] },
+  { url: 'https://www.drugdiscoverytoday.com/rss', label: 'Drug Discovery Today', topicIds: ['pharma', 'biotech-health'] },
+
+  // ── Google News (one feed per topic — 100 fresh articles each) ────────────
+  { url: 'https://news.google.com/rss/search?q=artificial+intelligence+machine+learning&hl=en-US&gl=US&ceid=US:en', label: 'Google News: AI', topicIds: ['ai-agi'] },
+  { url: 'https://news.google.com/rss/search?q=cybersecurity+hacking+data+breach&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Cybersecurity', topicIds: ['cybersecurity'] },
+  { url: 'https://news.google.com/rss/search?q=cryptocurrency+bitcoin+ethereum+blockchain&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Crypto', topicIds: ['blockchain-crypto'] },
+  { url: 'https://news.google.com/rss/search?q=AI+law+regulation+liability&hl=en-US&gl=US&ceid=US:en', label: 'Google News: AI Law', topicIds: ['ai-commercial-law'] },
+  { url: 'https://news.google.com/rss/search?q=gambling+law+sports+betting+regulation&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Gambling Law', topicIds: ['gambling-gaming-law'] },
+  { url: 'https://news.google.com/rss/search?q=data+privacy+GDPR+data+protection&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Data Privacy', topicIds: ['data-privacy'] },
+  { url: 'https://news.google.com/rss/search?q=stock+market+Wall+Street+earnings&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Stock Market', topicIds: ['stock-market'] },
+  { url: 'https://news.google.com/rss/search?q=venture+capital+startup+funding&hl=en-US&gl=US&ceid=US:en', label: 'Google News: VC & Startups', topicIds: ['vc-startups'] },
+  { url: 'https://news.google.com/rss/search?q=global+economy+inflation+interest+rates&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Global Economy', topicIds: ['global-economy'] },
+  { url: 'https://news.google.com/rss/search?q=biotech+clinical+trial+FDA+drug+approval&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Biotech', topicIds: ['biotech-health'] },
+  { url: 'https://news.google.com/rss/search?q=climate+change+renewable+energy&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Climate', topicIds: ['climate-energy'] },
+  { url: 'https://news.google.com/rss/search?q=SpaceX+NASA+space+exploration&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Space', topicIds: ['space-defense'] },
+  { url: 'https://news.google.com/rss/search?q=US+politics+Congress+White+House&hl=en-US&gl=US&ceid=US:en', label: 'Google News: US Politics', topicIds: ['us-politics'] },
+  { url: 'https://news.google.com/rss/search?q=geopolitics+foreign+policy+international+relations&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Geopolitics', topicIds: ['geopolitics'] },
+  { url: 'https://news.google.com/rss/search?q=entertainment+celebrity+awards+pop+culture&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Entertainment', topicIds: ['entertainment'] },
+  { url: 'https://news.google.com/rss/search?q=opera+classical+music+orchestra+symphony&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Classical & Opera', topicIds: ['classical-opera'] },
+  { url: 'https://news.google.com/rss/search?q=Judaism+Jewish+Israel+synagogue&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Judaism', topicIds: ['judaism'] },
+  { url: 'https://news.google.com/rss/search?q=sports+NFL+NBA+Premier+League+Olympics&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Sports', topicIds: ['sports'] },
+  { url: 'https://news.google.com/rss/search?q=real+estate+housing+market+property&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Real Estate', topicIds: ['real-estate'] },
+  { url: 'https://news.google.com/rss/search?q=food+restaurant+chef+culinary&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Food & Drink', topicIds: ['food-drink'] },
+  { url: 'https://news.google.com/rss/search?q=fashion+luxury+brands+fashion+week&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Fashion', topicIds: ['fashion-luxury'] },
+  { url: 'https://news.google.com/rss/search?q=science+research+discovery+physics+biology&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Science', topicIds: ['science'] },
+  { url: 'https://news.google.com/rss/search?q=video+games+esports+gaming+industry&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Gaming', topicIds: ['gaming-esports'] },
+  { url: 'https://news.google.com/rss/search?q=smartphone+gadgets+Apple+Samsung+consumer+tech&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Consumer Tech', topicIds: ['consumer-tech'] },
+  { url: 'https://news.google.com/rss/search?q=movie+film+streaming+Netflix+Hollywood&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Film & TV', topicIds: ['film-tv'] },
+  { url: 'https://news.google.com/rss/search?q=books+publishing+literature+author&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Literature', topicIds: ['literature'] },
+  { url: 'https://news.google.com/rss/search?q=art+gallery+museum+art+market+design&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Art & Design', topicIds: ['art-design'] },
+  { url: 'https://news.google.com/rss/search?q=journalism+media+press+freedom+newsroom&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Media', topicIds: ['media-journalism'] },
+  { url: 'https://news.google.com/rss/search?q=mental+health+depression+anxiety+therapy&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Mental Health', topicIds: ['mental-health'] },
+  { url: 'https://news.google.com/rss/search?q=travel+tourism+destination+airline&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Travel', topicIds: ['travel'] },
+  { url: 'https://news.google.com/rss/search?q=electric+vehicle+Tesla+EV+automotive&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Automotive & EV', topicIds: ['automotive-ev'] },
+  { url: 'https://news.google.com/rss/search?q=robotics+automation+humanoid+robot&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Robotics', topicIds: ['robotics'] },
+  { url: 'https://news.google.com/rss/search?q=nuclear+energy+fusion+nuclear+power&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Nuclear', topicIds: ['nuclear'] },
+  { url: 'https://news.google.com/rss/search?q=tariffs+trade+war+sanctions+WTO&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Trade & Tariffs', topicIds: ['trade-tariffs'] },
+  { url: 'https://news.google.com/rss/search?q=election+voting+democracy+electoral&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Elections', topicIds: ['elections'] },
+  { url: 'https://news.google.com/rss/search?q=military+armed+forces+defense+Pentagon&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Military', topicIds: ['military'] },
+  { url: 'https://news.google.com/rss/search?q=emerging+markets+BRICS+developing+economies&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Emerging Markets', topicIds: ['emerging-markets'] },
+  { url: 'https://news.google.com/rss/search?q=airline+aviation+airport+flight&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Aviation', topicIds: ['aviation'] },
+  { url: 'https://news.google.com/rss/search?q=agriculture+farming+food+security+crops&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Agriculture', topicIds: ['agriculture'] },
+  { url: 'https://news.google.com/rss/search?q=human+rights+civil+liberties+Amnesty&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Human Rights', topicIds: ['human-rights'] },
+  { url: 'https://news.google.com/rss/search?q=religion+faith+church+Islam+Buddhism&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Religion', topicIds: ['religion'] },
+  { url: 'https://news.google.com/rss/search?q=biodiversity+wildlife+conservation+ecosystem&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Environment', topicIds: ['environment'] },
+  { url: 'https://news.google.com/rss/search?q=health+wellness+nutrition+fitness+medicine&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Health & Wellness', topicIds: ['health-wellness'] },
+  { url: 'https://news.google.com/rss/search?q=philosophy+ethics+moral+philosophy&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Philosophy', topicIds: ['philosophy'] },
+  { url: 'https://news.google.com/rss/search?q=education+university+school+EdTech&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Education', topicIds: ['education'] },
+  { url: 'https://news.google.com/rss/search?q=immigration+asylum+border+migration&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Immigration', topicIds: ['immigration'] },
+  { url: 'https://news.google.com/rss/search?q=labor+unions+workers+rights+employment&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Labor', topicIds: ['labor'] },
+  { url: 'https://news.google.com/rss/search?q=architecture+urban+planning+building+design&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Architecture', topicIds: ['architecture'] },
+  { url: 'https://news.google.com/rss/search?q=social+media+Meta+TikTok+content+moderation&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Social Media', topicIds: ['social-media-tech'] },
+  { url: 'https://news.google.com/rss/search?q=pharmaceutical+drug+approval+FDA+clinical+trial&hl=en-US&gl=US&ceid=US:en', label: 'Google News: Pharma', topicIds: ['pharma'] },
 ]

@@ -1,6 +1,6 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { MAX_USER_TOPICS, TOPICS } from '@/lib/topics'
 
@@ -18,6 +18,17 @@ export async function saveUserTopics(topicIds: string[]) {
   }
 
   const supabase = createServerClient()
+
+  // Ensure user row exists (webhook may not be configured yet)
+  const clerkUser = await currentUser()
+  if (clerkUser) {
+    await supabase.from('users').upsert({
+      id: userId,
+      email: clerkUser.emailAddresses[0]?.emailAddress ?? '',
+      name: [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || null,
+      onboarding_completed: false,
+    }, { onConflict: 'id', ignoreDuplicates: true })
+  }
 
   const { error: deleteError } = await supabase
     .from('user_topics')

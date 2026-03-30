@@ -1,19 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b1120;
-  --surface: #131c2e;
-  --surface-2: #1a2540;
-  --border: #1e2d45;
-  --foreground: #f0f4ff;
-  --muted: #8b9ab5;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-muted: #1e3a5f;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --breaking: #f59e0b;
+  --background: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #2c2c2e;
+  --border: rgba(84, 84, 88, 0.65);
+  --foreground: #ffffff;
+  --muted: rgba(235, 235, 245, 0.6);
+  --muted-2: rgba(235, 235, 245, 0.3);
+  --accent: #ff375f;
+  --accent-hover: #e0304f;
+  --accent-muted: rgba(255, 55, 95, 0.15);
+  --success: #30d158;
+  --warning: #ffd60a;
+  --danger: #ff453a;
+  --breaking: #ff375f;
 }
 
 @theme inline {
@@ -23,6 +24,7 @@
   --color-border: var(--border);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-muted: var(--accent-muted);
@@ -35,13 +37,27 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'SF Pro Display', Arial, sans-serif;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   border-color: var(--border);
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Card surfaces */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-hover:hover {
+  background: var(--surface-2);
 }
