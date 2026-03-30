@@ -5,6 +5,7 @@ import { fetchRssFeed } from '@/lib/sources/rss'
 import { fetchNewsApiForTopic } from '@/lib/sources/newsapi'
 import { filterNewArticles } from '@/lib/ingestion/dedupe'
 import { analyzeArticlesBatch } from '@/lib/ingestion/analyze'
+import { batchFetchOgImages } from '@/lib/sources/ogimage'
 import { RSS_FEEDS } from '@/lib/sources/feeds'
 import { TOPICS } from '@/lib/topics'
 
@@ -59,15 +60,34 @@ export async function POST() {
     console.log(`NewsAPI done: ${allItems.length} items total`)
   }
 
-  // 3. Deduplicate
-  const newItems = await filterNewArticles(supabase, allItems)
+  // 3. Drop articles older than 3 days before dedup / analysis
+  const cutoff = Date.now() - 3 * 24 * 60 * 60 * 1000
+  const recentItems = allItems.filter(
+    (item) => !item.publishedAt || item.publishedAt.getTime() >= cutoff
+  )
+  console.log(`After age filter: ${recentItems.length} items (dropped ${allItems.length - recentItems.length} old)`)
+
+  // 4. Deduplicate
+  const newItems = await filterNewArticles(supabase, recentItems)
   console.log(`New after dedup: ${newItems.length}`)
 
   if (newItems.length === 0) {
     return NextResponse.json({ ingested: 0, breaking: 0, message: 'No new articles — all already in DB' })
   }
 
-  // 4. Interleave by primary topic so every topic gets proportional coverage
+  // 5. Fetch og:image for articles that don't already have one from their feed
+  const needsImage = newItems.map((item) => !item.imageUrl)
+  const urlsToFetch = newItems.map((item, i) => (needsImage[i] ? item.url : ''))
+  console.log(`Fetching og:images for ${needsImage.filter(Boolean).length} articles...`)
+  const ogImages = await batchFetchOgImages(urlsToFetch, 25)
+  for (let i = 0; i < newItems.length; i++) {
+    if (needsImage[i] && ogImages[i]) {
+      newItems[i] = { ...newItems[i], imageUrl: ogImages[i] }
+    }
+  }
+  console.log(`og:image fetch done`)
+
+  // 5. Interleave by primary topic so every topic gets proportional coverage
   //    (without this, topics early in the feed list consume the entire analysis budget)
   const toAnalyze = interleaveByTopic(newItems, 150)
   console.log(`Analyzing ${toAnalyze.length} articles with Claude...`)

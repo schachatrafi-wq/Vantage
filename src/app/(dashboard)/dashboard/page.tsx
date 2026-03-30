@@ -6,6 +6,8 @@ import ArticleCard from '@/components/ArticleCard'
 import Greeting from '@/components/Greeting'
 import type { ArticleWithSummary } from '@/lib/types'
 
+const THREE_DAYS_AGO = () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+
 export default async function DashboardPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
@@ -58,6 +60,7 @@ export default async function DashboardPage() {
         .from('articles')
         .select('*')
         .in('id', articleIds)
+        .gte('published_at', THREE_DAYS_AGO())
         .order('published_at', { ascending: false })
         .limit(60),
       supabase.from('article_summaries').select('*').in('article_id', articleIds),

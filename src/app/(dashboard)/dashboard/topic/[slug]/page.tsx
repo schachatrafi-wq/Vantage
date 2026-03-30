@@ -5,6 +5,8 @@ import { TOPICS } from '@/lib/topics'
 import ArticleCard from '@/components/ArticleCard'
 import type { ArticleWithSummary } from '@/lib/types'
 
+const THREE_DAYS_AGO = () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+
 export default async function TopicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
@@ -48,6 +50,7 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
       .from('articles')
       .select('*')
       .in('id', articleIds)
+      .gte('published_at', THREE_DAYS_AGO())
       .order('published_at', { ascending: false })
       .limit(40),
     supabase.from('article_summaries').select('*').in('article_id', articleIds),

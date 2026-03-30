@@ -5,6 +5,8 @@ import { TOPICS } from '@/lib/topics'
 import ArticleCard from '@/components/ArticleCard'
 import type { ArticleWithSummary } from '@/lib/types'
 
+const THREE_DAYS_AGO = () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+
 export default async function ConnectionsPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
@@ -14,6 +16,7 @@ export default async function ConnectionsPage() {
   const { data: crossFlags } = await supabase
     .from('cross_topic_flags')
     .select('article_id, topic_ids, reason')
+    .gte('created_at', THREE_DAYS_AGO())
     .order('created_at', { ascending: false })
     .limit(60)
 
@@ -36,7 +39,7 @@ export default async function ConnectionsPage() {
 
   const [{ data: articles }, { data: summaries }, { data: articleTopicRows }, { data: sourceRatingRows }] =
     await Promise.all([
-      supabase.from('articles').select('*').in('id', articleIds).order('published_at', { ascending: false }),
+      supabase.from('articles').select('*').in('id', articleIds).gte('published_at', THREE_DAYS_AGO()).order('published_at', { ascending: false }),
       supabase.from('article_summaries').select('*').in('article_id', articleIds),
       supabase.from('article_topics').select('article_id, topic_id').in('article_id', articleIds),
       supabase.from('user_source_ratings').select('source_domain, rating').eq('user_id', userId),
