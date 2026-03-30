@@ -30,13 +30,18 @@ function normalizeUrl(url: string): string {
   try {
     const u = new URL(url)
     u.hash = ''
+    // Lowercase scheme and hostname; path is case-sensitive per RFC
+    u.protocol = u.protocol.toLowerCase()
+    u.hostname = u.hostname.toLowerCase()
     u.searchParams.delete('utm_source')
     u.searchParams.delete('utm_medium')
     u.searchParams.delete('utm_campaign')
     u.searchParams.delete('utm_content')
     u.searchParams.delete('utm_term')
+    u.searchParams.delete('ref')
+    u.searchParams.delete('source')
     return u.toString().replace(/\/$/, '')
   } catch {
-    return url
+    return url.toLowerCase().replace(/\/$/, '')
   }
 }

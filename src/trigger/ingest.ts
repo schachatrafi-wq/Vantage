@@ -17,6 +17,12 @@ export const ingestNewsTask = schedules.task({
     logger.info('Starting news ingestion')
     const supabase = createServerClient()
 
+    // Housekeeping: prune digest log entries older than 48 hours
+    await supabase
+      .from('digest_sent_log')
+      .delete()
+      .lt('created_at', new Date(Date.now() - 48 * 3600 * 1000).toISOString())
+
     type IngestItem = {
       title: string
       url: string
@@ -71,7 +77,9 @@ export const ingestNewsTask = schedules.task({
         )
       }
     }
-    await Promise.allSettled(nitterFetches)
+    const nitterResults = await Promise.allSettled(nitterFetches)
+    const nitterFailed = nitterResults.filter((r) => r.status === 'rejected').length
+    if (nitterFailed > 0) logger.warn('Some Nitter fetches failed', { failed: nitterFailed })
     logger.info('Nitter fetched', { total: allItems.length })
 
     // 4. Deduplicate against existing articles
@@ -130,31 +138,32 @@ export const ingestNewsTask = schedules.task({
       const articleId = article.id
 
       // Insert summary
-      await supabase.from('article_summaries').insert({
+      const { error: summaryError } = await supabase.from('article_summaries').insert({
         article_id: articleId,
         bullets: analysis.bullets,
         one_liner: analysis.one_liner,
         is_breaking: analysis.is_breaking,
       })
+      if (summaryError) logger.error('Failed to insert summary', { articleId, error: summaryError.message })
 
       // Insert topic associations
-      if (relevantTopics.length > 0) {
-        await supabase.from('article_topics').insert(
-          relevantTopics.map(([topicId, score]) => ({
-            article_id: articleId,
-            topic_id: topicId,
-            relevance_score: score,
-          }))
-        )
-      }
+      const { error: topicsError } = await supabase.from('article_topics').insert(
+        relevantTopics.map(([topicId, score]) => ({
+          article_id: articleId,
+          topic_id: topicId,
+          relevance_score: score,
+        }))
+      )
+      if (topicsError) logger.error('Failed to insert article_topics', { articleId, error: topicsError.message })
 
       // Insert cross-topic flag
       if (analysis.cross_topic_ids && analysis.cross_topic_reason) {
-        await supabase.from('cross_topic_flags').insert({
+        const { error: crossError } = await supabase.from('cross_topic_flags').insert({
           article_id: articleId,
           topic_ids: analysis.cross_topic_ids,
           reason: analysis.cross_topic_reason,
         })
+        if (crossError) logger.error('Failed to insert cross_topic_flag', { articleId, error: crossError.message })
       }
 
       if (analysis.is_breaking) {
@@ -218,11 +227,13 @@ export const sendBreakingNotificationsTask = task({
         data: { articleId: article.id },
       })
 
-      await Promise.allSettled(
+      const pushResults = await Promise.allSettled(
         pushSubs.map((sub) =>
-          sendWebPush(sub.endpoint, sub.p256dh, sub.auth, payload)
+          sendWebPush(sub.endpoint as string, sub.p256dh as string, sub.auth as string, payload)
         )
       )
+      const pushFailed = pushResults.filter((r) => r.status === 'rejected').length
+      if (pushFailed > 0) logger.warn('Some breaking push notifications failed', { failed: pushFailed })
     }
   },
 })

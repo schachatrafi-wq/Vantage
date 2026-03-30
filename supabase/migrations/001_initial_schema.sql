@@ -133,3 +133,13 @@ CREATE TABLE digest_sent_log (
   period_key TEXT NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Index for efficient cleanup of old digest log entries
+CREATE INDEX idx_digest_sent_log_created_at ON digest_sent_log(created_at);
+
+-- Additional foreign key indexes to speed up cascade deletes
+CREATE INDEX idx_article_topics_article_id ON article_topics(article_id);
+CREATE INDEX idx_cross_topic_flags_article_id ON cross_topic_flags(article_id);
+CREATE INDEX idx_user_topics_topic_id ON user_topics(topic_id);
+CREATE INDEX idx_user_source_ratings_user_id ON user_source_ratings(user_id);
+CREATE INDEX idx_user_article_ratings_article_id ON user_article_ratings(article_id);

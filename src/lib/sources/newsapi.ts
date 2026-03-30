@@ -44,7 +44,10 @@ export async function fetchNewsApiForTopic(
     signal: AbortSignal.timeout(10000),
   })
 
-  if (!res.ok) return []
+  if (!res.ok) {
+    console.error(`NewsAPI error for topic ${topicId}: ${res.status} ${res.statusText}`)
+    return []
+  }
 
   const data = (await res.json()) as { articles: NewsApiArticle[] }
 

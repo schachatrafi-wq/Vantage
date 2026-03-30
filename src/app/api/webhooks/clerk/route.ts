@@ -47,14 +47,25 @@ export async function POST(req: Request) {
   if (event.type === 'user.created') {
     const { id, email_addresses, first_name, last_name, primary_email_address_id } = event.data
     const primaryEmail = email_addresses.find((e) => e.id === primary_email_address_id)
-    const name = [first_name, last_name].filter(Boolean).join(' ') || null
 
-    await supabase.from('users').insert({
+    if (!primaryEmail?.email_address) {
+      // Can't create user without an email — return 200 to stop Clerk retrying
+      console.error('Clerk user.created webhook missing primary email', { userId: id })
+      return new Response('OK', { status: 200 })
+    }
+
+    const name = [first_name, last_name].filter(Boolean).join(' ') || null
+    const { error } = await supabase.from('users').insert({
       id,
-      email: primaryEmail?.email_address ?? '',
+      email: primaryEmail.email_address,
       name,
       onboarding_completed: false,
     })
+
+    if (error && error.code !== '23505') {
+      console.error('Failed to insert user from webhook', { userId: id, error: error.message })
+      return new Response('DB error', { status: 500 })
+    }
   }
 
   if (event.type === 'user.updated') {
@@ -62,15 +73,24 @@ export async function POST(req: Request) {
     const primaryEmail = email_addresses.find((e) => e.id === primary_email_address_id)
     const name = [first_name, last_name].filter(Boolean).join(' ') || null
 
-    await supabase.from('users').upsert({
+    const { error } = await supabase.from('users').upsert({
       id,
       email: primaryEmail?.email_address ?? '',
       name,
     })
+
+    if (error) {
+      console.error('Failed to upsert user from webhook', { userId: id, error: error.message })
+      return new Response('DB error', { status: 500 })
+    }
   }
 
   if (event.type === 'user.deleted') {
-    await supabase.from('users').delete().eq('id', event.data.id)
+    const { error } = await supabase.from('users').delete().eq('id', event.data.id)
+    if (error) {
+      console.error('Failed to delete user from webhook', { userId: event.data.id, error: error.message })
+      return new Response('DB error', { status: 500 })
+    }
   }
 
   return new Response('OK', { status: 200 })

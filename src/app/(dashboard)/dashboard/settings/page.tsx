@@ -18,15 +18,16 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!user) return
     const supabase = createBrowserClient()
-    supabase
-      .from('user_topics')
-      .select('topic_id, priority_order')
-      .eq('user_id', user.id)
-      .order('priority_order')
-      .then(({ data }) => {
-        setSelected(((data ?? []) as { topic_id: string }[]).map((r) => r.topic_id))
-        setLoading(false)
-      })
+    void Promise.resolve(
+      supabase
+        .from('user_topics')
+        .select('topic_id, priority_order')
+        .eq('user_id', user.id)
+        .order('priority_order')
+    ).then(({ data }) => {
+      setSelected(((data ?? []) as { topic_id: string }[]).map((r) => r.topic_id))
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [user])
 
   function toggle(topicId: string) {

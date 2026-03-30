@@ -1,9 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { logger } from '@trigger.dev/sdk/v3'
 import { TOPICS } from '@/lib/topics'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
+
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
 
 export type ArticleAnalysis = {
   bullets: string[]
@@ -14,12 +17,23 @@ export type ArticleAnalysis = {
   cross_topic_reason: string | null
 }
 
+const EMPTY_ANALYSIS = (title: string): ArticleAnalysis => ({
+  bullets: [],
+  one_liner: title,
+  is_breaking: false,
+  topic_scores: {},
+  cross_topic_ids: null,
+  cross_topic_reason: null,
+})
+
 export async function analyzeArticle(
   title: string,
   content: string,
   candidateTopicIds: string[]
 ): Promise<ArticleAnalysis> {
   const candidateTopics = TOPICS.filter((t) => candidateTopicIds.includes(t.id))
+  if (candidateTopics.length === 0) return EMPTY_ANALYSIS(title)
+
   const topicList = candidateTopics.map((t) => `- ${t.id}: ${t.name} — ${t.description}`).join('\n')
 
   const prompt = `You are an expert news analyst for a personalized intelligence platform called Vantage.
@@ -41,35 +55,50 @@ Article content: ${content.slice(0, 1500)}
 
 Respond with ONLY valid JSON matching this exact structure. No markdown, no explanation.`
 
-  const message = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 600,
-    messages: [{ role: 'user', content: prompt }],
-  })
+  let text = ''
+  try {
+    const message = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 600,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    text = message.content[0].type === 'text' ? message.content[0].text : ''
+  } catch (err) {
+    logger.error('Claude API call failed', { title, error: String(err) })
+    return EMPTY_ANALYSIS(title)
+  }
 
-  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  // Strip markdown code fences Claude sometimes adds despite instructions
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/, '')
+    .trim()
 
   try {
-    const parsed = JSON.parse(text) as ArticleAnalysis
+    const parsed = JSON.parse(cleaned) as Partial<ArticleAnalysis>
+    const validTopicIds = new Set(candidateTopicIds)
+
     return {
-      bullets: (parsed.bullets ?? []).slice(0, 3),
-      one_liner: parsed.one_liner ?? title,
-      is_breaking: Boolean(parsed.is_breaking),
-      topic_scores: parsed.topic_scores ?? {},
-      cross_topic_ids: Array.isArray(parsed.cross_topic_ids) && parsed.cross_topic_ids.length > 1
-        ? parsed.cross_topic_ids
-        : null,
-      cross_topic_reason: parsed.cross_topic_reason ?? null,
+      bullets: Array.isArray(parsed.bullets)
+        ? parsed.bullets.slice(0, 3).map(String)
+        : [],
+      one_liner: typeof parsed.one_liner === 'string' ? parsed.one_liner : title,
+      is_breaking: parsed.is_breaking === true,
+      topic_scores: Object.fromEntries(
+        Object.entries(parsed.topic_scores ?? {}).filter(
+          ([id, score]) => validTopicIds.has(id) && typeof score === 'number'
+        )
+      ),
+      cross_topic_ids:
+        Array.isArray(parsed.cross_topic_ids) && parsed.cross_topic_ids.length >= 2
+          ? parsed.cross_topic_ids.filter((id) => validTopicIds.has(String(id)))
+          : null,
+      cross_topic_reason:
+        typeof parsed.cross_topic_reason === 'string' ? parsed.cross_topic_reason : null,
     }
   } catch {
-    return {
-      bullets: [],
-      one_liner: title,
-      is_breaking: false,
-      topic_scores: {},
-      cross_topic_ids: null,
-      cross_topic_reason: null,
-    }
+    logger.warn('Claude returned unparseable JSON', { title, raw: text.slice(0, 200) })
+    return EMPTY_ANALYSIS(title)
   }
 }
 
@@ -81,10 +110,22 @@ export async function analyzeArticlesBatch(
 
   for (let i = 0; i < articles.length; i += CONCURRENCY) {
     const batch = articles.slice(i, i + CONCURRENCY)
-    const batchResults = await Promise.all(
+    // Use allSettled so one failure doesn't drop the whole batch
+    const settled = await Promise.allSettled(
       batch.map((a) => analyzeArticle(a.title, a.content, a.candidateTopicIds))
     )
-    results.push(...batchResults)
+    for (let j = 0; j < settled.length; j++) {
+      const result = settled[j]
+      if (result.status === 'fulfilled') {
+        results.push(result.value)
+      } else {
+        logger.error('analyzeArticle failed for article', {
+          title: batch[j].title,
+          error: String(result.reason),
+        })
+        results.push(EMPTY_ANALYSIS(batch[j].title))
+      }
+    }
   }
 
   return results

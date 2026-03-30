@@ -77,17 +77,16 @@ export default async function DashboardPage() {
 
   const scored: ArticleWithSummary[] = (articles ?? []).map((article) => {
     const topics = articleTopicsMap[article.id] ?? []
-    const relevanceScore = Math.max(
-      ...(articleTopicRows ?? [])
-        .filter((r) => r.article_id === article.id)
-        .map((r) => {
-          const tw = topicWeights[r.topic_id] ?? 1.0
-          const sr = sourceRatings[article.source_domain]
-          const sourceMod = sr ? sr / 3 : 1.0
-          const recency = recencyDecay(article.published_at)
-          return r.relevance_score * tw * sourceMod * recency
-        })
-    )
+    const scores = (articleTopicRows ?? [])
+      .filter((r) => r.article_id === article.id)
+      .map((r) => {
+        const tw = topicWeights[r.topic_id] ?? 1.0
+        const sr = sourceRatings[article.source_domain]
+        const sourceMod = sr ? sr / 3 : 1.0
+        const recency = recencyDecay(article.published_at)
+        return r.relevance_score * tw * sourceMod * recency
+      })
+    const relevanceScore = scores.length > 0 ? Math.max(...scores) : 0
 
     return {
       ...article,

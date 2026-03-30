@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     return new Response('Invalid subscription', { status: 400 })
   }
 
+  const timezone = isValidTimezone(body.timezone) ? body.timezone : 'UTC'
   const supabase = createServerClient()
 
   await supabase.from('push_subscriptions').upsert({
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     endpoint: body.endpoint,
     p256dh: body.keys.p256dh,
     auth: body.keys.auth,
-    timezone: body.timezone ?? 'UTC',
+    timezone,
   })
 
   return new Response('OK', { status: 200 })
@@ -40,4 +41,13 @@ export async function DELETE(req: Request) {
   await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint).eq('user_id', userId)
 
   return new Response('OK', { status: 200 })
+}
+
+function isValidTimezone(tz: string): boolean {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz })
+    return true
+  } catch {
+    return false
+  }
 }
