@@ -67,9 +67,11 @@ export async function POST() {
     return NextResponse.json({ ingested: 0, breaking: 0, message: 'No new articles — all already in DB' })
   }
 
-  // 4. Analyze with Claude (cap at 80 per run to be safe)
-  const toAnalyze = newItems.slice(0, 80)
+  // 4. Interleave by primary topic so every topic gets proportional coverage
+  //    (without this, topics early in the feed list consume the entire analysis budget)
+  const toAnalyze = interleaveByTopic(newItems, 150)
   console.log(`Analyzing ${toAnalyze.length} articles with Claude...`)
+
   const analyses = await analyzeArticlesBatch(
     toAnalyze.map((item) => ({
       title: item.title,
@@ -133,4 +135,40 @@ export async function POST() {
 
   console.log(`Done: ${ingested} ingested, ${breaking} breaking`)
   return NextResponse.json({ ingested, breaking, analyzed: toAnalyze.length })
+}
+
+/**
+ * Round-robins through topics so every topic gets proportional analysis coverage.
+ * Without this, topics early in the feed list exhaust the analysis budget.
+ */
+function interleaveByTopic<T extends { candidateTopicIds: string[] }>(
+  items: T[],
+  limit: number
+): T[] {
+  // Group by primary topic
+  const byTopic = new Map<string, T[]>()
+  for (const item of items) {
+    const key = item.candidateTopicIds[0] ?? '__unknown__'
+    if (!byTopic.has(key)) byTopic.set(key, [])
+    byTopic.get(key)!.push(item)
+  }
+
+  const groups = [...byTopic.values()]
+  const result: T[] = []
+  let round = 0
+
+  while (result.length < limit) {
+    let added = 0
+    for (const group of groups) {
+      if (result.length >= limit) break
+      if (round < group.length) {
+        result.push(group[round])
+        added++
+      }
+    }
+    if (added === 0) break
+    round++
+  }
+
+  return result
 }

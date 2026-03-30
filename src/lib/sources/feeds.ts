@@ -49,16 +49,17 @@ export const RSS_FEEDS: RssFeed[] = [
   { url: 'https://www.eff.org/rss/updates.xml', label: 'EFF', topicIds: ['data-privacy', 'ai-commercial-law', 'human-rights'] },
 
   // ── Gambling & Gaming Law ─────────────────────────────────────────────────
-  { url: 'https://www.igamingbusiness.com/rss.xml', label: 'iGaming Business', topicIds: ['gambling-gaming-law'] },
+  { url: 'https://www.igamingbusiness.com/feed', label: 'iGaming Business', topicIds: ['gambling-gaming-law'] },
   { url: 'https://calvinayre.com/feed/', label: 'Calvin Ayre', topicIds: ['gambling-gaming-law'] },
   { url: 'https://sbcnews.co.uk/feed/', label: 'SBC News', topicIds: ['gambling-gaming-law'] },
   { url: 'https://www.gamblinginsider.com/feed/', label: 'Gambling Insider', topicIds: ['gambling-gaming-law'] },
-  { url: 'https://www.sportsbusinessjournal.com/SB/Sections/Technology/RSS-Feed.aspx', label: 'Sports Business Journal', topicIds: ['gambling-gaming-law', 'sports'] },
+  { url: 'https://www.legalsportsreport.com/feed/', label: 'Legal Sports Report', topicIds: ['gambling-gaming-law'] },
 
   // ── Stock Market ──────────────────────────────────────────────────────────
+  { url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml', label: 'WSJ Markets', topicIds: ['stock-market', 'global-economy'] },
+  { url: 'https://www.fool.com/feeds/index.aspx', label: 'Motley Fool', topicIds: ['stock-market', 'vc-startups'] },
   { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', label: 'MarketWatch Real-time', topicIds: ['stock-market'] },
   { url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', label: 'MarketWatch Top', topicIds: ['stock-market', 'global-economy'] },
-  { url: 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml', label: 'WSJ Markets', topicIds: ['stock-market', 'global-economy'] },
   { url: 'https://seekingalpha.com/market_currents.xml', label: 'Seeking Alpha', topicIds: ['stock-market'] },
   { url: 'https://www.investing.com/rss/news.rss', label: 'Investing.com', topicIds: ['stock-market', 'global-economy'] },
 
