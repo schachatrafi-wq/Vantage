@@ -125,3 +125,11 @@ INSERT INTO topics (id, name, slug, description, icon) VALUES
   ('biotech-health',      'Biotech & Health Tech',          'biotech-health',      'Medical breakthroughs, health technology, and pharma news',               '🧬'),
   ('climate-energy',      'Climate & Energy',               'climate-energy',      'Climate change, renewable energy, and environmental policy',              '🌱'),
   ('space-defense',       'Space & Defense',                'space-defense',       'Space exploration, defense technology, and geopolitical security',        '🛸');
+
+-- Digest sent log (prevents duplicate digests within same hour)
+CREATE TABLE digest_sent_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  period_key TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

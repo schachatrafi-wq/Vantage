@@ -5,9 +5,11 @@ import { TOPICS, MAX_USER_TOPICS } from '@/lib/topics'
 import { createBrowserClient } from '@/lib/supabase/client'
 import { saveSettings } from '../../actions'
 import { useUser } from '@clerk/nextjs'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 export default function SettingsPage() {
   const { user } = useUser()
+  const { state: pushState, subscribe, unsubscribe } = usePushNotifications()
   const [selected, setSelected] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
@@ -22,7 +24,7 @@ export default function SettingsPage() {
       .eq('user_id', user.id)
       .order('priority_order')
       .then(({ data }) => {
-        setSelected((data ?? []).map((r) => r.topic_id))
+        setSelected(((data ?? []) as { topic_id: string }[]).map((r) => r.topic_id))
         setLoading(false)
       })
   }, [user])
@@ -87,6 +89,41 @@ export default function SettingsPage() {
               </button>
             )
           })}
+        </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-base font-semibold text-foreground mb-1">Notifications</h2>
+        <p className="text-sm text-muted mb-4">
+          Receive a morning (9am) and evening (6pm) digest, plus instant breaking news alerts.
+        </p>
+        <div className="flex items-center gap-3">
+          {pushState === 'unsupported' && (
+            <span className="text-sm text-muted">Push notifications not supported in this browser.</span>
+          )}
+          {pushState === 'denied' && (
+            <span className="text-sm text-danger">Notifications blocked. Enable them in browser settings.</span>
+          )}
+          {pushState === 'subscribed' && (
+            <>
+              <span className="text-sm text-success">✓ Notifications enabled</span>
+              <button
+                onClick={unsubscribe}
+                className="text-xs text-muted hover:text-danger transition-colors"
+              >
+                Disable
+              </button>
+            </>
+          )}
+          {(pushState === 'unsubscribed' || pushState === 'loading') && (
+            <button
+              onClick={subscribe}
+              disabled={pushState === 'loading'}
+              className="rounded-lg bg-surface-2 border border-border px-4 py-2 text-sm font-medium text-foreground hover:border-accent transition-colors disabled:opacity-40"
+            >
+              Enable push notifications
+            </button>
+          )}
         </div>
       </section>
 
