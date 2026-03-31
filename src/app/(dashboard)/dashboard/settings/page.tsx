@@ -27,12 +27,15 @@ export default function SettingsPage() {
     setIngestResult(null)
     try {
       const res = await fetch('/api/ingest', { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed')
-      setIngestResult(data)
+      const text = await res.text()
+      let data: Record<string, unknown>
+      try { data = JSON.parse(text) } catch { throw new Error(`Server error (${res.status}): ${text.slice(0, 200)}`) }
+      if (!res.ok) throw new Error((data.error as string) ?? 'Failed')
+      setIngestResult(data as { ingested: number; breaking: number; analyzed?: number; message?: string })
       setIngestState('done')
-    } catch {
+    } catch (err) {
       setIngestState('error')
+      setIngestResult({ ingested: 0, breaking: 0, message: err instanceof Error ? err.message : String(err) })
     }
   }
 
@@ -289,7 +292,9 @@ export default function SettingsPage() {
             </span>
           )}
           {ingestState === 'error' && (
-            <span className="text-sm" style={{ color: 'var(--danger)' }}>Failed — check Anthropic API credits</span>
+            <span className="text-sm" style={{ color: 'var(--danger)' }}>
+              Failed{ingestResult?.message ? `: ${ingestResult.message}` : ' — check server logs'}
+            </span>
           )}
         </div>
         {ingestState === 'running' && (

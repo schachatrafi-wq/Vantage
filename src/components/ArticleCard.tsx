@@ -17,12 +17,18 @@ export default function ArticleCard({ article }: Props) {
   const [imgError, setImgError] = useState(false)
   const [isPending, startTransition] = useTransition()
 
+  const isTweet = article.source_domain === 'x.com'
+
   const topicDetails = article.topics
     .map((id) => TOPICS.find((t) => t.id === id))
     .filter(Boolean)
 
   const timeAgo = article.published_at ? formatTimeAgo(new Date(article.published_at)) : null
   const hasImage = !!(article.image_url && !imgError)
+
+  if (isTweet) {
+    return <TweetCard article={article} rating={rating} isPending={isPending} onRate={(v) => { const next = rating === v ? null : v; setRating(next); startTransition(() => rateArticle(article.id, next)) }} />
+  }
 
   function handleRating(value: 1 | -1) {
     const next = rating === value ? null : value
@@ -227,6 +233,121 @@ export default function ArticleCard({ article }: Props) {
             </span>
           </div>
         )}
+      </div>
+    </article>
+  )
+}
+
+function TweetCard({
+  article,
+  rating,
+  isPending,
+  onRate,
+}: {
+  article: ArticleWithSummary
+  rating: 1 | -1 | null
+  isPending: boolean
+  onRate: (v: 1 | -1) => void
+}) {
+  const timeAgo = article.published_at ? formatTimeAgo(new Date(article.published_at)) : null
+  // Extract @username from tweet URL: https://x.com/{username}/status/{id}
+  const usernameMatch = article.url.match(/x\.com\/([^/]+)\/status\//)
+  const displayHandle = usernameMatch ? `@${usernameMatch[1]}` : 'x.com'
+
+  const tweetTopics = article.topics.map((id) => TOPICS.find((t) => t.id === id)).filter(Boolean)
+
+  return (
+    <article
+      className="card card-hover"
+      style={{ borderLeft: '2px solid rgba(255,255,255,0.15)' }}
+    >
+      <div className="flex gap-3 p-3.5">
+        {/* X logo */}
+        <a
+          href={article.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-shrink-0 mt-0.5"
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 1200 1227" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.163 519.284ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.828Z" fill="white" fillOpacity="0.85"/>
+            </svg>
+          </div>
+        </a>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+          {/* Meta */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="text-xs font-bold"
+              style={{ color: 'var(--accent)', fontFamily: 'var(--font-sans)' }}
+            >
+              {displayHandle}
+            </span>
+            {timeAgo && (
+              <>
+                <span className="text-xs" style={{ color: 'var(--muted-2)' }}>·</span>
+                <span className="text-xs" style={{ color: 'var(--muted-2)', fontFamily: 'var(--font-sans)' }}>{timeAgo}</span>
+              </>
+            )}
+            {tweetTopics.slice(0, 1).map((topic) => (
+              <span
+                key={topic!.id}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]"
+                style={{
+                  background: 'rgba(255,255,255,0.07)',
+                  color: 'var(--muted)',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                {topic!.icon} {topic!.name}
+              </span>
+            ))}
+          </div>
+
+          {/* Tweet text */}
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm leading-relaxed transition-colors duration-150"
+            style={{ color: 'var(--foreground)', fontFamily: 'var(--font-sans)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
+          >
+            {article.title}
+          </a>
+
+          {/* Actions */}
+          <div className="flex items-center gap-0.5 pt-1">
+            <button
+              onClick={() => onRate(1)}
+              disabled={isPending}
+              className="rounded-lg px-2 py-0.5 text-xs transition-all duration-150"
+              style={rating === 1 ? { background: 'rgba(48,209,88,0.15)', color: 'var(--success)' } : { color: 'var(--muted-2)' }}
+              onMouseEnter={(e) => { if (rating !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+              onMouseLeave={(e) => { if (rating !== 1) e.currentTarget.style.background = '' }}
+            >
+              👍
+            </button>
+            <button
+              onClick={() => onRate(-1)}
+              disabled={isPending}
+              className="rounded-lg px-2 py-0.5 text-xs transition-all duration-150"
+              style={rating === -1 ? { background: 'rgba(255,69,58,0.15)', color: 'var(--danger)' } : { color: 'var(--muted-2)' }}
+              onMouseEnter={(e) => { if (rating !== -1) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+              onMouseLeave={(e) => { if (rating !== -1) e.currentTarget.style.background = '' }}
+            >
+              👎
+            </button>
+          </div>
+        </div>
       </div>
     </article>
   )

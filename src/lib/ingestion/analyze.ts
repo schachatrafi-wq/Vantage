@@ -8,11 +8,25 @@ const logger = {
   info: (msg: string, ctx?: object) => console.log(msg, ctx ?? ''),
 }
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
-
 const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
+
+function getClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not set')
+  return new Anthropic({ apiKey })
+}
+
+// Global ticket-based rate limiter — max ~38 req/min across all concurrent callers.
+// Each caller grabs a unique time-slot, advancing the queue atomically before awaiting.
+let _nextSlotAt = 0
+const RATE_INTERVAL_MS = 1600 // ~37.5 req/min, safely under the 50/min org limit
+
+async function acquireSlot() {
+  const mySlot = Math.max(Date.now(), _nextSlotAt)
+  _nextSlotAt = mySlot + RATE_INTERVAL_MS
+  const wait = mySlot - Date.now()
+  if (wait > 0) await new Promise<void>((r) => setTimeout(r, wait))
+}
 
 export type ArticleAnalysis = {
   bullets: string[]
@@ -70,16 +84,26 @@ Content: ${content.slice(0, 600)}
 JSON only.`
 
   let text = ''
-  try {
-    const message = await anthropic.messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 600,
-      messages: [{ role: 'user', content: prompt }],
-    })
-    text = message.content[0].type === 'text' ? message.content[0].text : ''
-  } catch (err) {
-    logger.error('Claude API call failed', { title, error: String(err) })
-    return EMPTY_ANALYSIS(title)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await acquireSlot()
+      const message = await getClient().messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 600,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      text = message.content[0].type === 'text' ? message.content[0].text : ''
+      break
+    } catch (err: unknown) {
+      const isRateLimit = String(err).includes('429') || String(err).includes('rate_limit')
+      if (isRateLimit && attempt < 2) {
+        logger.warn('Rate limited — waiting 15s before retry', { title, attempt })
+        await new Promise<void>((r) => setTimeout(r, 15_000))
+        continue
+      }
+      logger.error('Claude API call failed', { title, error: String(err) })
+      return EMPTY_ANALYSIS(title)
+    }
   }
 
   // Strip markdown code fences Claude sometimes adds despite instructions
@@ -119,7 +143,7 @@ JSON only.`
 export async function analyzeArticlesBatch(
   articles: Array<{ title: string; content: string; candidateTopicIds: string[]; topicOverrides?: Record<string, TopicMeta> }>
 ): Promise<ArticleAnalysis[]> {
-  const CONCURRENCY = 30
+  const CONCURRENCY = 8
   const results: ArticleAnalysis[] = new Array(articles.length)
   let cursor = 0
 

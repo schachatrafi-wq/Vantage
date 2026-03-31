@@ -134,11 +134,22 @@ export async function addCustomTopic(name: string) {
     .eq('user_id', userId)
   if ((count ?? 0) >= MAX_CUSTOM_TOPICS) throw new Error(`Maximum ${MAX_CUSTOM_TOPICS} custom topics allowed`)
 
+  const icon = pickIcon(trimmed)
+
+  // Insert into `topics` first so article_topics FK is satisfied
+  await supabase.from('topics').upsert({
+    id: slug,
+    name: trimmed,
+    slug,
+    description: `Custom topic: ${trimmed}`,
+    icon,
+  }, { onConflict: 'id', ignoreDuplicates: true })
+
   const { error } = await supabase.from('user_custom_topics').insert({
     user_id: userId,
     name: trimmed,
     slug,
-    icon: pickIcon(trimmed),
+    icon,
   })
 
   if (error) {
@@ -153,11 +164,10 @@ export async function removeCustomTopic(slug: string) {
   if (!/^x-[a-z0-9-]+$/.test(slug)) throw new Error('Invalid slug')
 
   const supabase = createServerClient()
-  await supabase
-    .from('user_custom_topics')
-    .delete()
-    .eq('user_id', userId)
-    .eq('slug', slug)
+  await Promise.all([
+    supabase.from('user_custom_topics').delete().eq('user_id', userId).eq('slug', slug),
+    supabase.from('topics').delete().eq('id', slug),
+  ])
 }
 
 /** Picks a reasonable emoji for a custom topic based on keywords in the name */

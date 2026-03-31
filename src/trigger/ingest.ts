@@ -2,10 +2,10 @@ import { schedules, task, logger } from '@trigger.dev/sdk/v3'
 import { createServerClient } from '@/lib/supabase/server'
 import { runIngestion } from '@/lib/ingestion/run'
 
-// Runs every 4 hours
+// Runs every 30 minutes
 export const ingestNewsTask = schedules.task({
   id: 'ingest-news',
-  cron: '0 */4 * * *',
+  cron: '*/30 * * * *',
   maxDuration: 300,
   run: async () => {
     logger.info('Starting news ingestion')

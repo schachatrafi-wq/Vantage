@@ -15,11 +15,13 @@
     "@clerk/nextjs": "^7.0.7",
     "@supabase/supabase-js": "^2.101.0",
     "@trigger.dev/sdk": "^4.4.3",
+    "agent-twitter-client": "^0.0.18",
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "rss-parser": "^3.13.0",
     "svix": "^1.89.0",
+    "twitter-api-v2": "^1.29.0",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
