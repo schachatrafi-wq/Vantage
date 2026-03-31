@@ -10,25 +10,34 @@ type Props = {
 }
 
 const NAV = [
-  { href: '/dashboard', label: 'My Feed', icon: '⚡' },
-  { href: '/dashboard/breaking', label: 'Breaking', icon: '🔴' },
+  { href: '/dashboard',             label: 'My Feed',  icon: '⚡' },
+  { href: '/dashboard/breaking',    label: 'Breaking', icon: '🔴' },
   { href: '/dashboard/connections', label: 'Connections', icon: '🔀' },
-  { href: '/dashboard/ask', label: 'Ask AI', icon: '💬' },
-  { href: '/dashboard/settings', label: 'Settings', icon: '⚙️' },
+  { href: '/dashboard/ask',         label: 'Ask AI',   icon: '💬' },
+  { href: '/dashboard/settings',    label: 'Settings', icon: '⚙️' },
 ]
 
 export default function Sidebar({ userTopics }: Props) {
   const pathname = usePathname()
 
   return (
-    <aside className="flex h-full w-56 flex-col shrink-0 border-r border-[rgba(84,84,88,0.45)] bg-[#111111] px-3 py-5">
-      <div className="mb-6 px-2 flex items-center gap-2">
+    <aside className="sidebar-glass flex h-full w-56 flex-col shrink-0 px-3 py-5">
+      {/* Logo */}
+      <div className="mb-6 px-2 flex items-center gap-2.5">
         <span className="text-lg font-bold text-white tracking-tight">Vantage</span>
-        <span className="text-[9px] font-bold text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded tracking-widest">
+        <span
+          className="text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest"
+          style={{
+            color: 'var(--accent)',
+            background: 'rgba(255,55,95,0.14)',
+            border: '1px solid rgba(255,55,95,0.22)',
+          }}
+        >
           BETA
         </span>
       </div>
 
+      {/* Primary nav */}
       <nav className="flex flex-col gap-0.5">
         {NAV.map(({ href, label, icon }) => {
           const active = pathname === href
@@ -37,22 +46,33 @@ export default function Sidebar({ userTopics }: Props) {
               key={href}
               href={href}
               className={[
-                'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all',
+                'flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium transition-all duration-150',
                 active
-                  ? 'bg-accent/10 text-accent'
-                  : 'text-[rgba(235,235,245,0.6)] hover:bg-[#2c2c2e] hover:text-white',
+                  ? 'text-accent'
+                  : 'text-[rgba(235,235,245,0.55)] hover:text-[rgba(235,235,245,0.92)]',
               ].join(' ')}
+              style={active ? {
+                background: 'rgba(255,55,95,0.13)',
+                border: '1px solid rgba(255,55,95,0.22)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 16px rgba(255,55,95,0.12)',
+              } : {
+                border: '1px solid transparent',
+              }}
             >
-              <span className="text-sm w-4 text-center">{icon}</span>
+              <span className="text-sm w-4 text-center leading-none">{icon}</span>
               {label}
             </Link>
           )
         })}
       </nav>
 
+      {/* Topic list */}
       {userTopics.length > 0 && (
         <div className="mt-6 flex-1 overflow-y-auto min-h-0">
-          <p className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(235,235,245,0.3)]">
+          <p
+            className="mb-2 px-2.5 text-[10px] font-semibold uppercase tracking-widest"
+            style={{ color: 'rgba(235,235,245,0.28)' }}
+          >
             My Topics
           </p>
           <div className="flex flex-col gap-0.5">
@@ -63,13 +83,20 @@ export default function Sidebar({ userTopics }: Props) {
                   key={topic.id}
                   href={`/dashboard/topic/${topic.slug}`}
                   className={[
-                    'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-all',
+                    'flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm transition-all duration-150',
                     active
-                      ? 'bg-accent/10 text-accent'
-                      : 'text-[rgba(235,235,245,0.6)] hover:bg-[#2c2c2e] hover:text-white',
+                      ? 'text-accent'
+                      : 'text-[rgba(235,235,245,0.55)] hover:text-[rgba(235,235,245,0.92)]',
                   ].join(' ')}
+                  style={active ? {
+                    background: 'rgba(255,55,95,0.13)',
+                    border: '1px solid rgba(255,55,95,0.22)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+                  } : {
+                    border: '1px solid transparent',
+                  }}
                 >
-                  <span className="text-sm w-4 text-center">{topic.icon}</span>
+                  <span className="text-sm w-4 text-center leading-none">{topic.icon}</span>
                   <span className="truncate">{topic.name}</span>
                 </Link>
               )
@@ -78,13 +105,20 @@ export default function Sidebar({ userTopics }: Props) {
         </div>
       )}
 
-      <div className="mt-auto flex items-center gap-2.5 px-2 pt-3 border-t border-[rgba(84,84,88,0.45)]">
+      {/* Account */}
+      <div
+        className="mt-auto flex items-center gap-2.5 px-2 pt-3"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+      >
         <UserButton
           appearance={{
-            variables: { colorBackground: '#1c1c1e', colorText: '#ffffff' },
+            variables: {
+              colorBackground: 'rgba(10,13,34,0.90)',
+              colorText: '#ffffff',
+            },
           }}
         />
-        <span className="text-xs text-[rgba(235,235,245,0.4)]">Account</span>
+        <span style={{ color: 'rgba(235,235,245,0.36)', fontSize: '12px' }}>Account</span>
       </div>
     </aside>
   )

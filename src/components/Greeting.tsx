@@ -18,15 +18,25 @@ export default function Greeting({ firstName, topicNames }: Props) {
 
   return (
     <div className="mb-8">
-      <h1 className="text-3xl font-bold text-white tracking-tight leading-tight">
+      <h1 className="text-3xl font-bold tracking-tight leading-tight" style={{ color: 'var(--foreground)' }}>
         {greeting},{' '}
-        <span className="text-accent">{firstName}</span>.
+        <span
+          style={{
+            background: 'linear-gradient(135deg, #FF375F 0%, #FF7B9C 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          {firstName}
+        </span>
+        .
       </h1>
-      <p className="text-base text-[rgba(235,235,245,0.6)] mt-1.5 font-medium">
+      <p className="text-base font-medium mt-1.5" style={{ color: 'var(--muted)' }}>
         Let&apos;s monitor the situation.
       </p>
       {topicNames.length > 0 && (
-        <p className="text-sm text-[rgba(235,235,245,0.35)] mt-1">
+        <p className="text-sm mt-1" style={{ color: 'var(--muted-2)' }}>
           Tracking {topicNames.join(', ')}
         </p>
       )}

@@ -24,14 +24,14 @@ export default async function ConnectionsPage() {
 
   if (articleIds.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white tracking-tight">Connections</h1>
-          <p className="text-[rgba(235,235,245,0.5)] text-sm mt-1.5">Articles that span multiple topics</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Connections</h1>
+          <p className="text-muted text-sm mt-1.5">Articles that span multiple topics</p>
         </div>
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <span className="text-4xl mb-4">🔀</span>
-          <p className="text-[rgba(235,235,245,0.5)] text-sm">No cross-topic articles yet. Run ingestion to populate.</p>
+          <p className="text-muted text-sm">No cross-topic articles yet. Run ingestion to populate.</p>
         </div>
       </div>
     )
@@ -75,10 +75,10 @@ export default async function ConnectionsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Connections</h1>
-        <p className="text-[rgba(235,235,245,0.5)] text-sm mt-1.5">
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Connections</h1>
+        <p className="text-muted text-sm mt-1.5">
           {feed.length} {feed.length === 1 ? 'article' : 'articles'} spanning multiple topics
         </p>
       </div>
@@ -92,8 +92,8 @@ export default async function ConnectionsPage() {
         return (
           <section key={key} className="mb-10">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-sm font-semibold text-white">{topicNames.join('  ↔  ')}</h2>
-              <span className="text-xs text-[rgba(235,235,245,0.4)] bg-[#2c2c2e] border border-[rgba(84,84,88,0.45)] px-2 py-0.5 rounded-full">
+              <h2 className="text-sm font-semibold text-foreground">{topicNames.join('  ↔  ')}</h2>
+              <span className="text-xs text-muted-2 bg-surface-2 border border-border px-2 py-0.5 rounded-full">
                 {groupArticles.length}
               </span>
             </div>

@@ -68,3 +68,17 @@ export const TOPICS: Topic[] = [
 ]
 
 export const MAX_USER_TOPICS = 12
+export const MAX_CUSTOM_TOPICS = 10
+
+/** Converts a free-text topic name into a URL-safe slug prefixed with "x-" */
+export function slugifyCustomTopic(name: string): string {
+  return (
+    'x-' +
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60)
+  )
+}

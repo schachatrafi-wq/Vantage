@@ -2,7 +2,7 @@
 
 import { auth } from '@clerk/nextjs/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { MAX_USER_TOPICS, TOPICS } from '@/lib/topics'
+import { MAX_USER_TOPICS, MAX_CUSTOM_TOPICS, TOPICS, slugifyCustomTopic } from '@/lib/topics'
 
 const VALID_TOPIC_IDS = new Set(TOPICS.map((t) => t.id))
 
@@ -114,4 +114,75 @@ export async function saveSettings(topicIds: string[]) {
     // but log clearly so it can be investigated
     throw new Error(`Failed to save topics: ${insertError.message}`)
   }
+}
+
+export async function addCustomTopic(name: string) {
+  const { userId } = await auth()
+  if (!userId) throw new Error('Unauthenticated')
+
+  const trimmed = name.trim()
+  if (!trimmed || trimmed.length < 2) throw new Error('Topic name must be at least 2 characters')
+  if (trimmed.length > 80) throw new Error('Topic name too long')
+
+  const slug = slugifyCustomTopic(trimmed)
+  const supabase = createServerClient()
+
+  // Enforce limit
+  const { count } = await supabase
+    .from('user_custom_topics')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+  if ((count ?? 0) >= MAX_CUSTOM_TOPICS) throw new Error(`Maximum ${MAX_CUSTOM_TOPICS} custom topics allowed`)
+
+  const { error } = await supabase.from('user_custom_topics').insert({
+    user_id: userId,
+    name: trimmed,
+    slug,
+    icon: pickIcon(trimmed),
+  })
+
+  if (error) {
+    if (error.code === '23505') throw new Error('You already have a topic with that name')
+    throw new Error(`Failed to add topic: ${error.message}`)
+  }
+}
+
+export async function removeCustomTopic(slug: string) {
+  const { userId } = await auth()
+  if (!userId) throw new Error('Unauthenticated')
+  if (!/^x-[a-z0-9-]+$/.test(slug)) throw new Error('Invalid slug')
+
+  const supabase = createServerClient()
+  await supabase
+    .from('user_custom_topics')
+    .delete()
+    .eq('user_id', userId)
+    .eq('slug', slug)
+}
+
+/** Picks a reasonable emoji for a custom topic based on keywords in the name */
+function pickIcon(name: string): string {
+  const n = name.toLowerCase()
+  if (/sport|football|soccer|basketball|tennis|cricket|golf|rugby/.test(n)) return '⚽'
+  if (/poker|casino|bet|gambling|lottery/.test(n)) return '🎲'
+  if (/formula|f1|racing|nascar|motorsport/.test(n)) return '🏎️'
+  if (/crypto|bitcoin|ethereum|nft|defi/.test(n)) return '💰'
+  if (/ai|artificial intelligence|ml|llm|gpt/.test(n)) return '🤖'
+  if (/climate|environment|green|solar|wind/.test(n)) return '🌱'
+  if (/health|medicine|medical|hospital|drug/.test(n)) return '💊'
+  if (/tech|software|hardware|startup|app/.test(n)) return '💻'
+  if (/war|conflict|military|ukraine|israel|gaza/.test(n)) return '⚔️'
+  if (/politic|election|congress|parliament|government/.test(n)) return '🏛️'
+  if (/music|concert|album|artist|band/.test(n)) return '🎵'
+  if (/film|movie|cinema|netflix|streaming/.test(n)) return '🎬'
+  if (/food|restaurant|chef|cuisine|cook/.test(n)) return '🍽️'
+  if (/travel|holiday|vacation|destination/.test(n)) return '✈️'
+  if (/science|research|physics|biology|chemistry/.test(n)) return '🔬'
+  if (/space|nasa|rocket|satellite|mars/.test(n)) return '🚀'
+  if (/real estate|property|housing|mortgage/.test(n)) return '🏠'
+  if (/law|legal|court|regulation|compliance/.test(n)) return '⚖️'
+  if (/fashion|luxury|style|brand|designer/.test(n)) return '👗'
+  if (/art|gallery|museum|painting|sculpture/.test(n)) return '🎨'
+  if (/book|literature|author|novel|publishing/.test(n)) return '📚'
+  return '🔍'
 }

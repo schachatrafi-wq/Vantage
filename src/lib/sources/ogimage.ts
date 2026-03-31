@@ -5,17 +5,15 @@
 export async function fetchOgImage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(3000), // 3s — we only need the <head>
       headers: {
-        'User-Agent':
-          'Mozilla/5.0 (compatible; Vantage-NewsBot/1.0; +https://vantage.news)',
+        'User-Agent': 'Mozilla/5.0 (compatible; Vantage-NewsBot/1.0; +https://vantage.news)',
         Accept: 'text/html,application/xhtml+xml',
       },
       redirect: 'follow',
     })
     if (!res.ok) return null
 
-    // Only parse as much HTML as we need — images are always in <head>
     const reader = res.body?.getReader()
     if (!reader) return null
 
@@ -24,7 +22,6 @@ export async function fetchOgImage(url: string): Promise<string | null> {
       const { done, value } = await reader.read()
       if (done) break
       html += new TextDecoder().decode(value)
-      // Stop once we've passed </head> — no point reading the full body
       if (html.includes('</head>') || html.length > 30_000) {
         reader.cancel()
         break
@@ -38,14 +35,12 @@ export async function fetchOgImage(url: string): Promise<string | null> {
 }
 
 function extractImageFromHtml(html: string): string | null {
-  // og:image (two attribute orderings)
   const og1 = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"'>\s]+)["']/i)
   if (og1?.[1]) return decodeHtmlEntities(og1[1])
 
   const og2 = html.match(/<meta[^>]+content=["']([^"'>\s]+)["'][^>]+property=["']og:image["']/i)
   if (og2?.[1]) return decodeHtmlEntities(og2[1])
 
-  // twitter:image
   const tw1 = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"'>\s]+)["']/i)
   if (tw1?.[1]) return decodeHtmlEntities(tw1[1])
 
@@ -60,21 +55,32 @@ function decodeHtmlEntities(s: string): string {
 }
 
 /**
- * Batch-fetches og:images for multiple URLs with bounded concurrency.
+ * Fetches og:images for multiple URLs using a worker-pool pattern.
+ * Unlike sequential batches, slots are filled immediately as work completes —
+ * no waiting for the slowest URL in a batch before starting the next group.
  */
 export async function batchFetchOgImages(
   urls: string[],
-  concurrency = 20
+  concurrency = 40
 ): Promise<(string | null)[]> {
   const results: (string | null)[] = new Array(urls.length).fill(null)
+  let cursor = 0
 
-  for (let i = 0; i < urls.length; i += concurrency) {
-    const batch = urls.slice(i, i + concurrency)
-    const settled = await Promise.allSettled(batch.map((url) => fetchOgImage(url)))
-    for (let j = 0; j < settled.length; j++) {
-      const r = settled[j]
-      results[i + j] = r.status === 'fulfilled' ? r.value : null
+  async function worker() {
+    while (cursor < urls.length) {
+      const i = cursor++
+      if (!urls[i]) continue // empty string = article already has an image, skip
+      try {
+        results[i] = await fetchOgImage(urls[i])
+      } catch {
+        results[i] = null
+      }
     }
+  }
+
+  const poolSize = Math.min(concurrency, urls.filter(Boolean).length)
+  if (poolSize > 0) {
+    await Promise.all(Array.from({ length: poolSize }, worker))
   }
 
   return results

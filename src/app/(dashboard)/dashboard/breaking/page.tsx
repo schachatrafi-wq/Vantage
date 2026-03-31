@@ -25,14 +25,14 @@ export default async function BreakingPage() {
 
   if (articleIds.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white tracking-tight">Breaking News</h1>
-          <p className="text-[rgba(235,235,245,0.5)] text-sm mt-1.5">Significant breaking stories across all topics</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Breaking News</h1>
+          <p className="text-muted text-sm mt-1.5">Significant breaking stories across all topics</p>
         </div>
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <span className="text-4xl mb-4">🔴</span>
-          <p className="text-[rgba(235,235,245,0.5)] text-sm">No breaking news right now.</p>
+          <p className="text-muted text-sm">No breaking news right now.</p>
         </div>
       </div>
     )
@@ -67,10 +67,10 @@ export default async function BreakingPage() {
   }))
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Breaking News</h1>
-        <p className="text-[rgba(235,235,245,0.5)] text-sm mt-1.5">
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">Breaking News</h1>
+        <p className="text-muted text-sm mt-1.5">
           {feed.length} significant {feed.length === 1 ? 'story' : 'stories'} across {TOPICS.length} topics
         </p>
       </div>

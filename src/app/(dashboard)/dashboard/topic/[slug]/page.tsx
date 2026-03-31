@@ -12,10 +12,34 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
   if (!userId) redirect('/sign-in')
 
   const { slug } = await params
-  const topic = TOPICS.find((t) => t.slug === slug)
-  if (!topic) notFound()
-
   const supabase = createServerClient()
+
+  // Support both predefined and custom topics
+  let topicName: string
+  let topicIcon: string
+  let topicDescription: string
+
+  const predefined = TOPICS.find((t) => t.slug === slug)
+  if (predefined) {
+    topicName = predefined.name
+    topicIcon = predefined.icon
+    topicDescription = predefined.description
+  } else {
+    // Check user's custom topics
+    const { data: custom } = await supabase
+      .from('user_custom_topics')
+      .select('name, icon')
+      .eq('slug', slug)
+      .limit(1)
+      .single()
+    if (!custom) notFound()
+    topicName = custom.name
+    topicIcon = custom.icon
+    topicDescription = `Your custom topic: ${custom.name}`
+  }
+
+  // Use a synthetic topic object for rendering
+  const topic = { id: slug, name: topicName, slug, description: topicDescription, icon: topicIcon }
 
   const [{ data: articleTopicRows }, { data: sourceRatingRows }] = await Promise.all([
     supabase
@@ -32,14 +56,14 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
 
   if (articleIds.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
           <p className="text-3xl mb-2">{topic.icon}</p>
-          <h1 className="text-3xl font-bold text-white tracking-tight">{topic.name}</h1>
-          <p className="text-[rgba(235,235,245,0.5)] text-sm mt-1.5">{topic.description}</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">{topic.name}</h1>
+          <p className="text-muted text-sm mt-1.5">{topic.description}</p>
         </div>
         <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-[rgba(235,235,245,0.5)] text-sm">No articles yet for this topic. Run ingestion to populate.</p>
+          <p className="text-muted text-sm">No articles yet for this topic. Run ingestion to populate.</p>
         </div>
       </div>
     )
@@ -78,11 +102,11 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
   const rest = feed.filter((a) => !a.summary?.is_breaking)
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-8">
         <p className="text-3xl mb-2">{topic.icon}</p>
-        <h1 className="text-3xl font-bold text-white tracking-tight">{topic.name}</h1>
-        <p className="text-[rgba(235,235,245,0.5)] text-sm mt-1.5">{topic.description}</p>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">{topic.name}</h1>
+        <p className="text-muted text-sm mt-1.5">{topic.description}</p>
       </div>
 
       {breaking.length > 0 && (

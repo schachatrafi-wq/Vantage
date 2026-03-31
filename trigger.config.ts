@@ -1,7 +1,7 @@
 import { defineConfig } from '@trigger.dev/sdk/v3'
 
 export default defineConfig({
-  project: process.env.TRIGGER_PROJECT_ID ?? 'vantage',
+  project: 'proj_bmlvuuycaajmrsigqqjp',
   dirs: ['./src/trigger'],
   maxDuration: 300,
 })

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
@@ -13,6 +13,13 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const playfair = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
+  style: ['normal', 'italic'],
+})
+
 export const metadata: Metadata = {
   title: 'Vantage — Your Intelligence Feed',
   description: 'Personalized AI-curated news across AI, law, finance, and more.',
@@ -23,7 +30,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+      <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full`}>
         <body className="h-full antialiased">{children}</body>
       </html>
     </ClerkProvider>

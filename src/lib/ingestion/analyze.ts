@@ -32,34 +32,42 @@ const EMPTY_ANALYSIS = (title: string): ArticleAnalysis => ({
   cross_topic_reason: null,
 })
 
+export type TopicMeta = { name: string; description: string }
+
 export async function analyzeArticle(
   title: string,
   content: string,
-  candidateTopicIds: string[]
+  candidateTopicIds: string[],
+  topicOverrides: Record<string, TopicMeta> = {}
 ): Promise<ArticleAnalysis> {
-  const candidateTopics = TOPICS.filter((t) => candidateTopicIds.includes(t.id))
+  const candidateTopics = candidateTopicIds.map((id) => {
+    const t = TOPICS.find((t) => t.id === id)
+    if (t) return { id: t.id, name: t.name, description: t.description }
+    const override = topicOverrides[id]
+    if (override) return { id, name: override.name, description: override.description }
+    return null
+  }).filter(Boolean) as { id: string; name: string; description: string }[]
   if (candidateTopics.length === 0) return EMPTY_ANALYSIS(title)
 
-  const topicList = candidateTopics.map((t) => `- ${t.id}: ${t.name} — ${t.description}`).join('\n')
+  const topicList = candidateTopics.map((t) => `${t.id}: ${t.name}`).join('\n')
 
-  const prompt = `You are an expert news analyst for a personalized intelligence platform called Vantage.
+  const prompt = `Analyze this news article and return JSON:
+{"bullets":["<15w>","<15w>"],"one_liner":"<12w>","is_breaking":<bool>,"topic_scores":{<id>:<0-1>},"cross_topic_ids":<[ids]|null>,"cross_topic_reason":<"str"|null>}
 
-Analyze the following article and return a JSON object with these fields:
+Rules:
+- bullets: 2-3 key facts, max 15 words each
+- one_liner: core story, max 12 words
+- is_breaking: true only for major breaking news (landmark ruling, major attack, market crash, etc.)
+- topic_scores: score ONLY the topics listed below, 0=irrelevant 0.5=relevant 1=highly relevant
+- cross_topic_ids: list 2+ topic IDs if article spans multiple topics, else null
 
-- **bullets**: Array of 2-3 concise bullet points (each max 20 words) summarizing the key facts. Be precise and informative.
-- **one_liner**: Single sentence (max 15 words) capturing the core story.
-- **is_breaking**: Boolean. True only if this is genuinely significant breaking news that warrants immediate notification (major policy change, significant market event, landmark court ruling, breakthrough research, etc.). Be conservative — not every article is breaking.
-- **topic_scores**: Object mapping each topic ID to a relevance score 0.0–1.0. 0 = irrelevant, 0.5 = somewhat relevant, 1.0 = highly relevant. Only score the topics listed below.
-- **cross_topic_ids**: If the article is significantly relevant to 2+ topics, list those topic IDs. Otherwise null.
-- **cross_topic_reason**: If cross_topic_ids is not null, a short explanation (max 15 words) of why it spans multiple topics. Otherwise null.
-
-Topics to score:
+Topics:
 ${topicList}
 
-Article title: ${title}
-Article content: ${content.slice(0, 1500)}
+Title: ${title}
+Content: ${content.slice(0, 600)}
 
-Respond with ONLY valid JSON matching this exact structure. No markdown, no explanation.`
+JSON only.`
 
   let text = ''
   try {
@@ -109,16 +117,16 @@ Respond with ONLY valid JSON matching this exact structure. No markdown, no expl
 }
 
 export async function analyzeArticlesBatch(
-  articles: Array<{ title: string; content: string; candidateTopicIds: string[] }>
+  articles: Array<{ title: string; content: string; candidateTopicIds: string[]; topicOverrides?: Record<string, TopicMeta> }>
 ): Promise<ArticleAnalysis[]> {
-  const CONCURRENCY = 5
+  const CONCURRENCY = 20
   const results: ArticleAnalysis[] = []
 
   for (let i = 0; i < articles.length; i += CONCURRENCY) {
     const batch = articles.slice(i, i + CONCURRENCY)
     // Use allSettled so one failure doesn't drop the whole batch
     const settled = await Promise.allSettled(
-      batch.map((a) => analyzeArticle(a.title, a.content, a.candidateTopicIds))
+      batch.map((a) => analyzeArticle(a.title, a.content, a.candidateTopicIds, a.topicOverrides))
     )
     for (let j = 0; j < settled.length; j++) {
       const result = settled[j]

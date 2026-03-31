@@ -2,21 +2,31 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 import { TOPICS } from '@/lib/topics'
+import { Suspense } from 'react'
 import ArticleCard from '@/components/ArticleCard'
 import Greeting from '@/components/Greeting'
+import SortToggle from '@/components/SortToggle'
 import type { ArticleWithSummary } from '@/lib/types'
 
 const THREE_DAYS_AGO = () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>
+}) {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
+  const { sort: sortParam } = await searchParams
+  const sort: 'recent' | 'relevance' = sortParam === 'relevance' ? 'relevance' : 'recent'
+
   const supabase = createServerClient()
 
-  const [{ data: userTopicRows }, { data: affinityRow }, { data: sourceRatingRows }, user] =
+  const [{ data: userTopicRows }, { data: customTopicRows }, { data: affinityRow }, { data: sourceRatingRows }, user] =
     await Promise.all([
       supabase.from('user_topics').select('topic_id').eq('user_id', userId),
+      supabase.from('user_custom_topics').select('slug').eq('user_id', userId),
       supabase
         .from('user_affinity_profiles')
         .select('topic_weights')
@@ -26,8 +36,10 @@ export default async function DashboardPage() {
       currentUser(),
     ])
 
-  const topicIds = (userTopicRows ?? []).map((r) => r.topic_id)
-  if (topicIds.length === 0) redirect('/onboarding')
+  const predefinedTopicIds = (userTopicRows ?? []).map((r) => r.topic_id)
+  if (predefinedTopicIds.length === 0) redirect('/onboarding')
+  const customTopicIds = (customTopicRows ?? []).map((r) => r.slug)
+  const topicIds = [...predefinedTopicIds, ...customTopicIds]
 
   const topicWeights = (affinityRow?.topic_weights ?? {}) as Record<string, number>
   const sourceRatings = Object.fromEntries(
@@ -47,7 +59,7 @@ export default async function DashboardPage() {
     const firstName = user?.firstName ?? 'there'
     const topicNames = topicIds.map((id) => TOPICS.find((t) => t.id === id)?.name).filter(Boolean) as string[]
     return (
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         <Greeting firstName={firstName} topicNames={topicNames} />
         <EmptyFeed />
       </div>
@@ -107,7 +119,15 @@ export default async function DashboardPage() {
     }
   })
 
-  scored.sort((a, b) => b.relevance_score - a.relevance_score)
+  if (sort === 'relevance') {
+    scored.sort((a, b) => b.relevance_score - a.relevance_score)
+  } else {
+    scored.sort((a, b) => {
+      const ta = a.published_at ? new Date(a.published_at).getTime() : 0
+      const tb = b.published_at ? new Date(b.published_at).getTime() : 0
+      return tb - ta
+    })
+  }
 
   const breakingArticles = scored.filter((a) => a.summary?.is_breaking)
   const feedArticles = scored.filter((a) => !a.summary?.is_breaking).slice(0, 40)
@@ -118,8 +138,17 @@ export default async function DashboardPage() {
     .filter(Boolean) as string[]
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <Greeting firstName={firstName} topicNames={topicNames} />
+
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted-2)' }}>
+          {sort === 'recent' ? 'Latest News' : 'Top Stories'}
+        </p>
+        <Suspense fallback={null}>
+          <SortToggle current={sort} />
+        </Suspense>
+      </div>
 
       {breakingArticles.length > 0 && (
         <section className="mb-8">
@@ -136,9 +165,6 @@ export default async function DashboardPage() {
 
       {feedArticles.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(235,235,245,0.3)] mb-4">
-            Top Stories
-          </p>
           <div className="flex flex-col gap-3">
             {feedArticles.map((article) => (
               <ArticleCard key={article.id} article={article} />
@@ -156,8 +182,8 @@ function EmptyFeed() {
   return (
     <div className="flex flex-col items-center justify-center h-80 text-center">
       <span className="text-5xl mb-4">📡</span>
-      <h2 className="text-lg font-semibold text-white">Your feed is being built</h2>
-      <p className="text-sm text-[rgba(235,235,245,0.5)] mt-2 max-w-sm">
+      <h2 className="text-lg font-semibold text-foreground">Your feed is being built</h2>
+      <p className="text-sm text-muted mt-2 max-w-sm">
         We&apos;re ingesting and analyzing the latest news. Check back in a few minutes.
       </p>
     </div>

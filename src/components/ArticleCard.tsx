@@ -37,91 +37,130 @@ export default function ArticleCard({ article }: Props) {
   }
 
   return (
-    <article className="card card-hover transition-colors duration-150">
-      <div className="flex gap-3 p-4">
-        {/* Left: all text content */}
-        <div className="flex-1 min-w-0 flex flex-col gap-2">
+    <article className="card card-hover">
+      <div className="flex gap-4 p-5">
+
+        {/* Left: text content */}
+        <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+
           {/* Breaking badge */}
           {article.summary?.is_breaking && (
-            <span className="inline-flex items-center gap-1 self-start rounded-md bg-breaking px-2 py-0.5 text-[11px] font-bold text-white tracking-wide">
-              ● BREAKING
+            <span
+              className="inline-flex items-center gap-1 self-start rounded-lg px-2.5 py-0.5 text-xs font-bold text-white tracking-widest uppercase"
+              style={{
+                background: 'rgba(255,55,95,0.85)',
+                boxShadow: '0 0 12px rgba(255,55,95,0.50)',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              ● Breaking
             </span>
           )}
 
           {/* Meta row */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-bold text-accent uppercase tracking-wide">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="text-xs font-bold uppercase tracking-widest"
+              style={{ color: 'var(--accent)', fontFamily: 'var(--font-sans)' }}
+            >
               {article.source_domain}
             </span>
             {timeAgo && (
               <>
-                <span className="text-[rgba(235,235,245,0.3)] text-[11px]">·</span>
-                <span className="text-[11px] text-[rgba(235,235,245,0.45)]">{timeAgo}</span>
+                <span className="text-xs" style={{ color: 'var(--muted-2)' }}>·</span>
+                <span className="text-xs" style={{ color: 'var(--muted-2)', fontFamily: 'var(--font-sans)' }}>{timeAgo}</span>
               </>
             )}
             {topicDetails.slice(0, 1).map((topic) => (
               <span
                 key={topic!.id}
-                className="inline-flex items-center gap-0.5 rounded-full bg-[#2c2c2e] px-1.5 py-0.5 text-[10px] text-[rgba(235,235,245,0.5)]"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]"
+                style={{
+                  background: 'rgba(255,255,255,0.09)',
+                  color: 'var(--muted)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  fontFamily: 'var(--font-sans)',
+                }}
               >
                 {topic!.icon} {topic!.name}
               </span>
             ))}
           </div>
 
-          {/* Title */}
+          {/* Title — serif, large */}
           <a
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[15px] font-bold text-white leading-snug hover:text-accent transition-colors line-clamp-3"
+            className="text-xl font-bold leading-snug line-clamp-3 transition-colors duration-150"
+            style={{
+              fontFamily: 'var(--font-playfair), Georgia, serif',
+              color: 'var(--foreground)',
+              letterSpacing: '-0.01em',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--foreground)')}
           >
             {article.title}
           </a>
 
-          {/* Bullets */}
+          {/* Summary bullets */}
           {article.summary && article.summary.bullets.length > 0 && (
-            <ul className="flex flex-col gap-1 border-l-2 border-accent/30 pl-3">
+            <ul
+              className="flex flex-col gap-1.5 pl-3.5"
+              style={{ borderLeft: '2px solid rgba(255,55,95,0.35)' }}
+            >
               {article.summary.bullets.slice(0, 2).map((bullet, i) => (
-                <li key={i} className="text-[13px] text-[rgba(235,235,245,0.55)] leading-relaxed line-clamp-2">
+                <li
+                  key={i}
+                  className="text-sm leading-relaxed line-clamp-2"
+                  style={{ color: 'var(--muted)', fontFamily: 'var(--font-sans)' }}
+                >
                   {bullet}
                 </li>
               ))}
             </ul>
           )}
 
-          {/* Cross-topic */}
+          {/* Cross-topic flag */}
           {article.cross_topic_flag && (
-            <div className="rounded-lg bg-[#2c2c2e] px-2.5 py-1.5 text-xs text-[rgba(235,235,245,0.55)]">
-              <span className="text-accent font-semibold">↔ </span>
+            <div
+              className="rounded-xl px-3 py-2 text-sm"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                color: 'var(--muted)',
+                border: '1px solid rgba(255,255,255,0.09)',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>↔ </span>
               {article.cross_topic_flag.reason}
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-1.5 border-t border-[rgba(84,84,88,0.3)] mt-0.5">
+          {/* Actions row */}
+          <div
+            className="flex items-center justify-between pt-2 mt-0.5"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+          >
             <div className="flex items-center gap-0.5">
               <button
                 onClick={() => handleRating(1)}
                 disabled={isPending}
-                className={[
-                  'rounded-lg px-2 py-1 text-xs transition-all',
-                  rating === 1
-                    ? 'bg-success/15 text-success'
-                    : 'text-[rgba(235,235,245,0.4)] hover:bg-[#2c2c2e] hover:text-white',
-                ].join(' ')}
+                className="rounded-lg px-2 py-1 text-sm transition-all duration-150"
+                style={rating === 1 ? { background: 'rgba(48,209,88,0.15)', color: 'var(--success)' } : { color: 'var(--muted-2)' }}
+                onMouseEnter={(e) => { if (rating !== 1) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+                onMouseLeave={(e) => { if (rating !== 1) e.currentTarget.style.background = '' }}
               >
                 👍
               </button>
               <button
                 onClick={() => handleRating(-1)}
                 disabled={isPending}
-                className={[
-                  'rounded-lg px-2 py-1 text-xs transition-all',
-                  rating === -1
-                    ? 'bg-danger/15 text-danger'
-                    : 'text-[rgba(235,235,245,0.4)] hover:bg-[#2c2c2e] hover:text-white',
-                ].join(' ')}
+                className="rounded-lg px-2 py-1 text-sm transition-all duration-150"
+                style={rating === -1 ? { background: 'rgba(255,69,58,0.15)', color: 'var(--danger)' } : { color: 'var(--muted-2)' }}
+                onMouseEnter={(e) => { if (rating !== -1) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+                onMouseLeave={(e) => { if (rating !== -1) e.currentTarget.style.background = '' }}
               >
                 👎
               </button>
@@ -130,22 +169,25 @@ export default function ArticleCard({ article }: Props) {
             <div className="relative">
               <button
                 onClick={() => setShowSourceRater((v) => !v)}
-                className="text-[11px] text-[rgba(235,235,245,0.3)] hover:text-[rgba(235,235,245,0.7)] transition-colors"
+                className="text-xs transition-colors duration-150"
+                style={{ color: 'var(--muted-2)', fontFamily: 'var(--font-sans)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--muted)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted-2)')}
               >
                 {sourceRating
                   ? `${'★'.repeat(sourceRating)}${'☆'.repeat(5 - sourceRating)}`
                   : 'Rate source'}
               </button>
               {showSourceRater && (
-                <div className="absolute right-0 bottom-8 flex gap-0.5 rounded-xl border border-[rgba(84,84,88,0.65)] bg-[#1c1c1e] p-2 shadow-2xl z-10">
+                <div className="glass-popup absolute right-0 bottom-8 flex gap-0.5 rounded-xl p-2 z-10">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <button
                       key={n}
                       onClick={() => handleSourceRating(n)}
-                      className={[
-                        'text-base transition-colors px-0.5',
-                        n <= (sourceRating ?? 0) ? 'text-warning' : 'text-[rgba(235,235,245,0.3)] hover:text-warning',
-                      ].join(' ')}
+                      className="text-lg transition-colors px-0.5"
+                      style={{ color: n <= (sourceRating ?? 0) ? 'var(--warning)' : 'var(--muted-2)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--warning)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = n <= (sourceRating ?? 0) ? 'var(--warning)' : 'var(--muted-2)')}
                     >
                       ★
                     </button>
@@ -158,21 +200,29 @@ export default function ArticleCard({ article }: Props) {
 
         {/* Right: thumbnail */}
         {hasImage ? (
-          <div className="flex-shrink-0 w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] rounded-xl overflow-hidden bg-[#2c2c2e] self-start mt-0.5">
+          <div
+            className="flex-shrink-0 w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden self-start"
+            style={{ border: '1px solid rgba(255,255,255,0.10)' }}
+          >
             <Image
               src={article.image_url!}
               alt=""
-              width={110}
-              height={110}
+              width={144}
+              height={144}
               className="w-full h-full object-cover"
               onError={() => setImgError(true)}
               unoptimized
             />
           </div>
         ) : (
-          /* Placeholder keeps layout stable when no image */
-          <div className="flex-shrink-0 w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] rounded-xl bg-[#2c2c2e] self-start mt-0.5 flex items-center justify-center">
-            <span className="text-2xl opacity-30">
+          <div
+            className="flex-shrink-0 w-28 h-28 sm:w-36 sm:h-36 rounded-xl self-start flex items-center justify-center"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.09)',
+            }}
+          >
+            <span className="text-3xl opacity-25">
               {TOPICS.find((t) => t.id === article.topics[0])?.icon ?? '📰'}
             </span>
           </div>
