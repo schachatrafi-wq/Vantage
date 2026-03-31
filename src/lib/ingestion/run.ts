@@ -116,12 +116,63 @@ export async function runIngestion(supabase: SupabaseClient): Promise<IngestionR
   const newItems = await filterNewArticles(supabase, recentItems)
   log.info('New after dedup', { count: newItems.length })
 
+  // ── 5b. Retroactive custom topic tagging ────────────────────────────────────
+  // Articles already in DB (filtered by dedup) may have come from a custom topic feed
+  // but were originally ingested under a different topic (e.g., 'sports'). Tag them now.
+  if (uniqueCustomTopics.size > 0) {
+    const alreadyInDb = recentItems.filter(
+      (item) => !newItems.some((n) => n.url === item.url) &&
+        uniqueCustomTopics.has(item.candidateTopicIds[0] ?? '')
+    )
+
+    if (alreadyInDb.length > 0) {
+      const { data: existingArticles } = await supabase
+        .from('articles')
+        .select('id, url')
+        .in('url', alreadyInDb.map((i) => i.url))
+
+      if (existingArticles && existingArticles.length > 0) {
+        const existingIds = existingArticles.map((a: { id: string }) => a.id)
+        const urlToId = Object.fromEntries(
+          existingArticles.map((a: { id: string; url: string }) => [a.url, a.id])
+        )
+
+        const { data: alreadyTagged } = await supabase
+          .from('article_topics')
+          .select('article_id, topic_id')
+          .in('article_id', existingIds)
+
+        const taggedSet = new Set(
+          (alreadyTagged ?? []).map((r: { article_id: string; topic_id: string }) => `${r.article_id}:${r.topic_id}`)
+        )
+
+        const newTagRows = alreadyInDb
+          .map((item) => ({
+            article_id: urlToId[item.url],
+            topic_id: item.candidateTopicIds[0],
+          }))
+          .filter((r) => r.article_id && !taggedSet.has(`${r.article_id}:${r.topic_id}`))
+          .map((r) => ({ ...r, relevance_score: 0.85 }))
+
+        if (newTagRows.length > 0) {
+          await supabase.from('article_topics').insert(newTagRows)
+          log.info('Retroactive custom topic tags added', { count: newTagRows.length })
+        }
+      }
+    }
+  }
+
   if (newItems.length === 0) {
     return { ingested: 0, breaking: 0, analyzed: 0, breakingArticleIds: [], message: 'No new articles — all already in DB' }
   }
 
-  // ── 6. Round-robin interleave for fair topic coverage ────────────────────────
-  const toAnalyze = interleaveByTopic(newItems, 60)
+  // ── 6. Round-robin interleave — custom topics get guaranteed slots first ──────
+  const customItems = newItems.filter((i) => uniqueCustomTopics.has(i.candidateTopicIds[0] ?? ''))
+  const regularItems = newItems.filter((i) => !uniqueCustomTopics.has(i.candidateTopicIds[0] ?? ''))
+  // Give custom topics up to 5 slots each (guaranteed), fill rest with regular interleave
+  const customSlots = interleaveByTopic(customItems, uniqueCustomTopics.size * 5)
+  const regularSlots = interleaveByTopic(regularItems, Math.max(0, 60 - customSlots.length))
+  const toAnalyze = [...customSlots, ...regularSlots]
   log.info('Selected for analysis', { count: toAnalyze.length })
 
   // ── 7+8. og:image fetch and Claude analysis IN PARALLEL ──────────────────────

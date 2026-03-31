@@ -46,13 +46,24 @@ export default async function DashboardPage({
     (sourceRatingRows ?? []).map((r) => [r.source_domain, r.rating])
   )
 
-  const { data: articleTopicRows } = await supabase
-    .from('article_topics')
-    .select('article_id, topic_id, relevance_score')
-    .in('topic_id', topicIds)
-    .gte('relevance_score', 0.3)
-    .order('relevance_score', { ascending: false })
-    .limit(200)
+  // Query articles first by recency so new ingestions always surface to top
+  const { data: recentArticleRows } = await supabase
+    .from('articles')
+    .select('id')
+    .gte('published_at', THREE_DAYS_AGO())
+    .order('published_at', { ascending: false })
+    .limit(400)
+
+  const recentArticleIds = (recentArticleRows ?? []).map((r) => r.id)
+
+  const { data: articleTopicRows } = recentArticleIds.length > 0
+    ? await supabase
+        .from('article_topics')
+        .select('article_id, topic_id, relevance_score')
+        .in('topic_id', topicIds)
+        .in('article_id', recentArticleIds)
+        .gte('relevance_score', 0.3)
+    : { data: [] }
 
   const articleIds = [...new Set((articleTopicRows ?? []).map((r) => r.article_id))]
   if (articleIds.length === 0) {
@@ -72,7 +83,6 @@ export default async function DashboardPage({
         .from('articles')
         .select('*')
         .in('id', articleIds)
-        .gte('published_at', THREE_DAYS_AGO())
         .order('published_at', { ascending: false })
         .limit(60),
       supabase.from('article_summaries').select('*').in('article_id', articleIds),
