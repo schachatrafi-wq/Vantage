@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     'agent-twitter-client',
     'rss-parser',
     '@anthropic-ai/sdk',
+    'twitter-api-v2',
   ],
 };
 

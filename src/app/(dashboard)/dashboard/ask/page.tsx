@@ -1,11 +1,27 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
   sources?: { title: string; url: string; source: string }[]
+}
+
+function renderJournalisticText(text: string): ReactNode {
+  const paragraphs = text.split(/\n\n+/).filter(Boolean)
+  return paragraphs.map((para, pi) => {
+    // Split on **bold** markers
+    const parts = para.split(/\*\*([^*]+)\*\*/)
+    const inline = parts.map((part, i) =>
+      i % 2 === 1 ? <strong key={i}>{part}</strong> : part
+    )
+    return (
+      <p key={pi} style={{ marginBottom: pi < paragraphs.length - 1 ? '1em' : 0 }}>
+        {inline}
+      </p>
+    )
+  })
 }
 
 const SUGGESTED = [
@@ -81,7 +97,7 @@ export default function AskAIPage() {
                 className="glass text-left rounded-xl px-4 py-3 text-sm transition-all duration-150"
                 style={{ color: 'var(--muted)' }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.10)'
+                  e.currentTarget.style.background = 'rgba(0,0,0,0.04)'
                   e.currentTarget.style.color = 'var(--foreground)'
                 }}
                 onMouseLeave={(e) => {
@@ -102,7 +118,7 @@ export default function AskAIPage() {
                 className="max-w-[80%] rounded-2xl rounded-br-sm px-4 py-3 text-sm text-white font-medium"
                 style={{
                   background: 'linear-gradient(135deg, #FF375F 0%, #C42850 100%)',
-                  boxShadow: '0 4px 20px rgba(255,55,95,0.35), inset 0 1px 0 rgba(255,255,255,0.20)',
+                  boxShadow: '0 2px 12px rgba(255,55,95,0.28)',
                 }}
               >
                 {msg.content}
@@ -110,10 +126,16 @@ export default function AskAIPage() {
             ) : (
               <div className="max-w-[90%] flex flex-col gap-3">
                 <div
-                  className="glass rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
-                  style={{ color: 'var(--foreground)' }}
+                  className="glass rounded-2xl rounded-bl-sm px-5 py-4"
+                  style={{
+                    color: 'var(--foreground)',
+                    fontFamily: 'var(--font-playfair), Georgia, "Times New Roman", serif',
+                    fontSize: '15px',
+                    lineHeight: '1.75',
+                    letterSpacing: '0.01em',
+                  }}
                 >
-                  {msg.content}
+                  {renderJournalisticText(msg.content)}
                 </div>
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="flex flex-col gap-1.5">
@@ -130,7 +152,7 @@ export default function AskAIPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="glass flex items-start gap-2 rounded-lg px-3 py-2 transition-all duration-150"
-                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.10)')}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.04)')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = '')}
                       >
                         <span

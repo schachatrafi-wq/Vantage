@@ -5,7 +5,7 @@ import { runIngestion } from '@/lib/ingestion/run'
 // Runs every 30 minutes
 export const ingestNewsTask = schedules.task({
   id: 'ingest-news',
-  cron: '*/30 * * * *',
+  cron: '0 * * * *',
   maxDuration: 300,
   run: async () => {
     logger.info('Starting news ingestion')

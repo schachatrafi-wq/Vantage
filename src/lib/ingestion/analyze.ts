@@ -66,22 +66,23 @@ export async function analyzeArticle(
   const topicList = candidateTopics.map((t) => `${t.id}: ${t.name}`).join('\n')
 
   const prompt = `Analyze this news article and return JSON:
-{"bullets":["<15w>","<15w>"],"one_liner":"<12w>","is_breaking":<bool>,"topic_scores":{<id>:<0-1>},"cross_topic_ids":<[ids]|null>,"cross_topic_reason":<"str"|null>}
+{"bullets":["...","...","..."],"one_liner":"...","is_breaking":<bool>,"topic_scores":{<id>:<0-1>},"cross_topic_ids":<[ids]|null>,"cross_topic_reason":<"str"|null>}
 
 Rules:
-- bullets: 2-3 key facts, max 15 words each
-- one_liner: core story, max 12 words
-- is_breaking: true only for major breaking news (landmark ruling, major attack, market crash, etc.)
+- bullets: exactly 3 bullets, each 20-30 words. Write with the depth of a newspaper analyst — include the key fact, the immediate implication, and relevant context or "why it matters". Each bullet should feel complete and insightful, not a headline fragment.
+- one_liner: single sharp sentence capturing the core story in under 18 words
+- is_breaking: true only for major breaking news (landmark ruling, major attack, significant market crash, major geopolitical event)
 - topic_scores: score ONLY the topics listed below, 0=irrelevant 0.5=relevant 1=highly relevant
 - cross_topic_ids: list 2+ topic IDs if article spans multiple topics, else null
+- cross_topic_reason: one sentence explaining the cross-topic connection
 
 Topics:
 ${topicList}
 
 Title: ${title}
-Content: ${content.slice(0, 600)}
+Content: ${content.slice(0, 1200)}
 
-JSON only.`
+JSON only, no markdown fences.`
 
   let text = ''
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -89,7 +90,7 @@ JSON only.`
       await acquireSlot()
       const message = await getClient().messages.create({
         model: CLAUDE_MODEL,
-        max_tokens: 600,
+        max_tokens: 900,
         messages: [{ role: 'user', content: prompt }],
       })
       text = message.content[0].type === 'text' ? message.content[0].text : ''

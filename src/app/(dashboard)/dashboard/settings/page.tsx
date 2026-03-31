@@ -94,7 +94,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <div className="h-6 w-32 rounded-lg animate-pulse" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        <div className="h-6 w-32 rounded-lg animate-pulse" style={{ background: 'rgba(0,0,0,0.08)' }} />
       </div>
     )
   }
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                   <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{ct.name}</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--muted-2)' }}
+                    style={{ background: 'rgba(0,0,0,0.06)', color: 'var(--muted-2)' }}
                   >
                     custom
                   </span>
@@ -188,24 +188,21 @@ export default function SettingsPage() {
                 disabled={isDisabled}
                 className="flex flex-col gap-2 rounded-xl p-3.5 text-left transition-all duration-150"
                 style={isSelected ? {
-                  background: 'rgba(255,55,95,0.13)',
-                  border: '1px solid rgba(255,55,95,0.28)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.10), 0 0 20px rgba(255,55,95,0.10)',
+                  background: 'rgba(255,55,95,0.08)',
+                  border: '1px solid rgba(255,55,95,0.24)',
+                  boxShadow: '0 2px 12px rgba(255,55,95,0.10)',
                   color: 'var(--foreground)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
                 } : isDisabled ? {
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: 'rgba(0,0,0,0.03)',
+                  border: '1px solid rgba(0,0,0,0.07)',
                   color: 'var(--muted-2)',
-                  opacity: 0.38,
+                  opacity: 0.40,
                   cursor: 'not-allowed',
                 } : {
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.10)',
+                  background: '#ffffff',
+                  border: '1px solid rgba(0,0,0,0.09)',
                   color: 'var(--foreground)',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 }}
               >
                 <span className="text-xl">{topic.icon}</span>
@@ -232,7 +229,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Notifications */}
-      <section className="mt-10 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.09)' }}>
+      <section className="mt-10 pt-8" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
         <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Notifications</h2>
         <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
           Receive a morning (9am) and evening (6pm) digest, plus instant breaking news alerts.
@@ -271,10 +268,10 @@ export default function SettingsPage() {
       </section>
 
       {/* News Ingestion */}
-      <section className="mt-10 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.09)' }}>
+      <section className="mt-10 pt-8" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
         <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--foreground)' }}>News Ingestion</h2>
         <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
-          Manually fetch and analyze the latest articles. Normally runs automatically every 4 hours.
+          Manually fetch and analyze the latest articles. Normally runs automatically every hour.
         </p>
         <div className="flex items-center gap-4 flex-wrap">
           <button

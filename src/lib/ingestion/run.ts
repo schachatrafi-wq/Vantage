@@ -19,7 +19,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { fetchRssFeed } from '@/lib/sources/rss'
 import { fetchNewsApiForTopic } from '@/lib/sources/newsapi'
-import { searchTwitter } from '@/lib/sources/twitter'
+import { searchTwitter, fetchAccountTweets } from '@/lib/sources/twitter'
+import { TOPIC_X_ACCOUNTS } from '@/lib/sources/accounts'
+import { searchBluesky } from '@/lib/sources/bluesky'
 import { filterNewArticles } from '@/lib/ingestion/dedupe'
 import { analyzeArticlesBatch } from '@/lib/ingestion/analyze'
 import type { TopicMeta } from '@/lib/ingestion/analyze'
@@ -174,16 +176,46 @@ async function runMainPipeline(
     .filter((id) => TOPIC_TWITTER_QUERIES[id])
     .map((id) => ({ query: TOPIC_TWITTER_QUERIES[id], topicId: id }))
 
+  // 2a. Bluesky (free, no API key) — keyword search per active topic
   if (twitterQueries.length > 0) {
+    log.info('Fetching Bluesky (predefined topics)', { queries: twitterQueries.length })
+    const bskyResults = await Promise.allSettled(
+      twitterQueries.map(({ query, topicId }) =>
+        searchBluesky(query, topicId, 10).then((items) =>
+          items.map((item) => ({ ...item, candidateTopicIds: [topicId] }))
+        )
+      )
+    )
+    for (const r of bskyResults) {
+      if (r.status === 'fulfilled') allItems.push(...r.value)
+    }
+    log.info('Bluesky done', { total: allItems.length })
+  }
+
+  // 2b. Twitter (optional — only runs if TWITTER_BEARER_TOKEN is set)
+  if (process.env.TWITTER_BEARER_TOKEN && twitterQueries.length > 0) {
     log.info('Fetching Twitter (predefined topics)', { queries: twitterQueries.length })
     const twitterResults = await Promise.allSettled(
       twitterQueries.map(({ query, topicId }) =>
-        searchTwitter(query, topicId, 15).then((items) =>
+        searchTwitter(query, topicId, 5).then((items) =>
           items.map((item) => ({ ...item, candidateTopicIds: [topicId] }))
         )
       )
     )
     for (const r of twitterResults) {
+      if (r.status === 'fulfilled') allItems.push(...r.value)
+    }
+    const curatedTopics = activeTopicIds.filter((id) => TOPIC_X_ACCOUNTS[id])
+    const accountResults = await Promise.allSettled(
+      curatedTopics.flatMap((topicId) =>
+        (TOPIC_X_ACCOUNTS[topicId] ?? []).map(({ username, label }) =>
+          fetchAccountTweets(username, label, 3).then((items) =>
+            items.map((item) => ({ ...item, candidateTopicIds: [topicId] }))
+          )
+        )
+      )
+    )
+    for (const r of accountResults) {
       if (r.status === 'fulfilled') allItems.push(...r.value)
     }
     log.info('Twitter done', { total: allItems.length })
@@ -261,14 +293,26 @@ async function runCustomTopicPipeline(
   const fetchResults = await Promise.allSettled(
     [...uniqueCustomTopics.entries()].flatMap(([slug, name]) => {
       const googleNewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(name)}&hl=en-US&gl=US&ceid=US:en`
-      return [
+      const redditUrl = `https://www.reddit.com/r/all/search/.rss?q=${encodeURIComponent(name)}&sort=new&t=day`
+      const fetches = [
         fetchRssFeed(googleNewsUrl, `Custom: ${name}`, PER_TOPIC_RSS).then((items) =>
           items.map((item) => ({ ...item, candidateTopicIds: [slug] }))
         ),
-        searchTwitter(name, name, PER_TOPIC_TWEETS).then((items) =>
+        fetchRssFeed(redditUrl, `Reddit: ${name}`, 10).then((items) =>
+          items.map((item) => ({ ...item, candidateTopicIds: [slug] }))
+        ),
+        searchBluesky(name, name, PER_TOPIC_TWEETS).then((items) =>
           items.map((item) => ({ ...item, candidateTopicIds: [slug] }))
         ),
       ]
+      if (process.env.TWITTER_BEARER_TOKEN) {
+        fetches.push(
+          searchTwitter(name, name, 5).then((items) =>
+            items.map((item) => ({ ...item, candidateTopicIds: [slug] }))
+          )
+        )
+      }
+      return fetches
     })
   )
   for (const r of fetchResults) {

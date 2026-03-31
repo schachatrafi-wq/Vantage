@@ -22,24 +22,32 @@ export function usePushNotifications() {
       .catch(() => setState('unsupported'))
   }, [])
 
-  async function subscribe(): Promise<boolean> {
+  async function subscribe(): Promise<string | null> {
     try {
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!vapidKey) {
+        console.error('[push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set')
+        return 'Configuration error: VAPID key missing'
+      }
+
       const reg = await navigator.serviceWorker.ready
       const permission = await Notification.requestPermission()
 
       if (permission === 'denied') {
         setState('denied')
-        return false
+        return 'Notifications blocked in browser settings'
+      }
+
+      if (permission !== 'granted') {
+        return 'Permission not granted'
       }
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ''
-        ) as unknown as string,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       })
 
-      await fetch('/api/push', {
+      const res = await fetch('/api/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,10 +60,16 @@ export function usePushNotifications() {
         }),
       })
 
+      if (!res.ok) {
+        console.error('[push] Failed to save subscription', res.status)
+        return 'Failed to save subscription'
+      }
+
       setState('subscribed')
-      return true
-    } catch {
-      return false
+      return null
+    } catch (err) {
+      console.error('[push] subscribe error:', err)
+      return err instanceof Error ? err.message : String(err)
     }
   }
 

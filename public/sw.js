@@ -23,8 +23,8 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const articleId = event.notification.data?.articleId
-  const url = articleId ? `/dashboard?article=${articleId}` : '/dashboard'
+  const type = event.notification.data?.type
+  const url = type === 'digest' ? '/dashboard' : '/dashboard/breaking'
 
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((windowClients) => {
