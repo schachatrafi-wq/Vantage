@@ -18,7 +18,7 @@ type CustomItem = {
 }
 
 const parser = new Parser<object, CustomItem>({
-  timeout: 10000,
+  timeout: 5000,
   headers: { 'User-Agent': 'Vantage-NewsBot/1.0 (news aggregator)' },
   customFields: {
     item: [

@@ -294,7 +294,7 @@ export default function SettingsPage() {
         </div>
         {ingestState === 'running' && (
           <p className="text-xs mt-2" style={{ color: 'var(--muted-2)' }}>
-            This takes 2–4 minutes. Images are fetched from each article source.
+            This takes ~30–45 seconds.
           </p>
         )}
       </section>

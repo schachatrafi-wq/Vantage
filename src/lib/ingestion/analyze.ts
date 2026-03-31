@@ -119,27 +119,26 @@ JSON only.`
 export async function analyzeArticlesBatch(
   articles: Array<{ title: string; content: string; candidateTopicIds: string[]; topicOverrides?: Record<string, TopicMeta> }>
 ): Promise<ArticleAnalysis[]> {
-  const CONCURRENCY = 20
-  const results: ArticleAnalysis[] = []
+  const CONCURRENCY = 30
+  const results: ArticleAnalysis[] = new Array(articles.length)
+  let cursor = 0
 
-  for (let i = 0; i < articles.length; i += CONCURRENCY) {
-    const batch = articles.slice(i, i + CONCURRENCY)
-    // Use allSettled so one failure doesn't drop the whole batch
-    const settled = await Promise.allSettled(
-      batch.map((a) => analyzeArticle(a.title, a.content, a.candidateTopicIds, a.topicOverrides))
-    )
-    for (let j = 0; j < settled.length; j++) {
-      const result = settled[j]
-      if (result.status === 'fulfilled') {
-        results.push(result.value)
-      } else {
-        logger.error('analyzeArticle failed for article', {
-          title: batch[j].title,
-          error: String(result.reason),
-        })
-        results.push(EMPTY_ANALYSIS(batch[j].title))
+  async function worker() {
+    while (cursor < articles.length) {
+      const i = cursor++
+      const a = articles[i]
+      try {
+        results[i] = await analyzeArticle(a.title, a.content, a.candidateTopicIds, a.topicOverrides)
+      } catch (err) {
+        logger.error('analyzeArticle failed', { title: a.title, error: String(err) })
+        results[i] = EMPTY_ANALYSIS(a.title)
       }
     }
+  }
+
+  const poolSize = Math.min(CONCURRENCY, articles.length)
+  if (poolSize > 0) {
+    await Promise.all(Array.from({ length: poolSize }, worker))
   }
 
   return results

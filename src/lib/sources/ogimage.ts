@@ -5,7 +5,7 @@
 export async function fetchOgImage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(3000), // 3s — we only need the <head>
+      signal: AbortSignal.timeout(2000), // 2s — we only need the <head>
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Vantage-NewsBot/1.0; +https://vantage.news)',
         Accept: 'text/html,application/xhtml+xml',

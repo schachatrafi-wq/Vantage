@@ -121,7 +121,7 @@ export async function runIngestion(supabase: SupabaseClient): Promise<IngestionR
   }
 
   // ── 6. Round-robin interleave for fair topic coverage ────────────────────────
-  const toAnalyze = interleaveByTopic(newItems, 150)
+  const toAnalyze = interleaveByTopic(newItems, 60)
   log.info('Selected for analysis', { count: toAnalyze.length })
 
   // ── 7+8. og:image fetch and Claude analysis IN PARALLEL ──────────────────────
