@@ -38,7 +38,7 @@ export async function searchTwitter(
       (response.includes?.users ?? []).map((u) => [u.id, u.username])
     )
 
-    return (response.data ?? []).map((tweet) => {
+    return ((response.data as { id: string; text: string; author_id?: string; created_at?: string }[] | undefined) ?? []).map((tweet) => {
       const username = users.get(tweet.author_id ?? '') ?? 'twitter'
       return {
         title: tweet.text.slice(0, 280).replace(/\s+/g, ' ').trim(),
