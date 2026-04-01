@@ -42,13 +42,13 @@ export default function SignInPage() {
           <SignIn
             appearance={{
               variables: {
-                colorBackground: '#141414',
-                colorText: '#f5f5f5',
-                colorTextSecondary: '#888888',
-                colorInputBackground: '#1c1c1c',
-                colorInputText: '#f5f5f5',
-                colorPrimary: '#3b82f6',
-                borderRadius: '0.5rem',
+                colorBackground: '#ffffff',
+                colorText: '#111111',
+                colorTextSecondary: 'rgba(0,0,0,0.52)',
+                colorInputBackground: '#faf8f3',
+                colorInputText: '#111111',
+                colorPrimary: '#FF375F',
+                borderRadius: '0.75rem',
               },
               elements: {
                 card: 'shadow-none bg-transparent p-0',
